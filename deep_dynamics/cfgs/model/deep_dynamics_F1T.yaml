@@ -51,14 +51,14 @@ PARAMETERS:
     Min: -0.02
     Max: 0.02
   - Svf: 
-    Min: -300.0
-    Max: 300.0
+    Min: -1.0
+    Max: 1.0
   - Shr:
     Min: -0.02
     Max: 0.02
   - Svr:
-    Min: -300.0
-    Max: 300.0
+    Min: -1.0
+    Max: 1.0
 VEHICLE_SPECS:
   lf: 0.16
   lr: 0.17

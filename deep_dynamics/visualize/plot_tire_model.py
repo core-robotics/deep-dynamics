@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import matplotlib
 
-font = {'family' : 'normal',
-        'weight' : 'normal',
-        'size'   : 22}
-matplotlib.rc('font', **font)
+# font = {'family' : 'normal',
+#         'weight' : 'normal',
+#         'size'   : 22}
+# matplotlib.rc('font', **font)
 
 # Gt Coeffs
 Bf_gt = 5.579

@@ -89,7 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("model_cfg", type=str, help="Config file for model")
     parser.add_argument("dataset_file", type=str, help="Dataset file")
     parser.add_argument("model_state_dict", type=str, help="Model weights file")
-    parser.add_argument("--eval_coeffs", action="store_true", default=False, help="Print learned coefficients of model")
+    parser.add_argument("--eval_coeffs", action="store_true", default=True, help="Print learned coefficients of model")
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
     argdict : dict = vars(args)
