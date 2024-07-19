@@ -39,8 +39,10 @@ else:
     device = torch.device("cpu")
 
 param_file = "../cfgs/model/deep_dynamics_iac.yaml"
-state_dict = "../output/deep_dynamics_iac/2layers_188neurons_64batch_0.001914lr_15horizon_3gru/epoch_53.pth"
-dataset_file = "../data/LVMS_23_01_04_A.csv"
+state_dict = "../output/deep_dynamics_iac/test_1/epoch_146.pth"
+dataset_file = "../data/Putnam_park2023_run4_1.csv"
+# state_dict = "../output/deep_dynamics_iac/2layers_188neurons_64batch_0.001914lr_15horizon_3gru/epoch_53.pth"
+# dataset_file = "../data/LVMS_23_01_04_A.csv"
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
@@ -94,8 +96,8 @@ final_displacement_error /= len(ddm_predictions)
 print("DDM Average Displacement Error:", average_displacement_error)
 print("DDM Final Displacement Error:", final_displacement_error)
 
-param_file = "../cfgs/model/deep_pacejka_iac.yaml"
-state_dict = "../output/deep_pacejka_iac/1layers_254neurons_16batch_0.000439lr_16horizon_5gru/epoch_354.pth"
+# param_file = "../cfgs/model/deep_pacejka_iac.yaml"
+# state_dict = "../output/deep_pacejka_iac/1layers_254neurons_16batch_0.000439lr_16horizon_5gru/epoch_354.pth"
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
@@ -150,8 +152,8 @@ print("DPM (GT) Final Displacement Error:", final_displacement_error)
 # samples = [np.argmax(dpm_ades[:2200] - ddm_ades[:2200])]
 samples = np.array(range(len(dpm_predictions)-1110, len(dpm_predictions)-100))
 print(samples)
-param_file = "../cfgs/model/deep_pacejka_iac.yaml"
-state_dict = "../output/deep_pacejka_iac/plus20/epoch_391.pth"
+# param_file = "../cfgs/model/deep_pacejka_iac.yaml"
+# state_dict = "../output/deep_pacejka_iac/plus20/epoch_391.pth"
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)
 dpm = string_to_model[param_dict["MODEL"]["NAME"]](param_dict, eval=True)
@@ -200,8 +202,8 @@ final_displacement_error /= len(dpm_plus_predictions)
 print("DPM (+20) Average Displacement Error:", average_displacement_error)
 print("DPM (+20) Final Displacement Error:", final_displacement_error)
 
-param_file = "../cfgs/model/deep_pacejka_iac.yaml"
-state_dict = "../output/deep_pacejka_iac/minus20/epoch_265.pth"
+# param_file = "../cfgs/model/deep_pacejka_iac.yaml"
+# state_dict = "../output/deep_pacejka_iac/minus20/epoch_265.pth"
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)
 dpm = string_to_model[param_dict["MODEL"]["NAME"]](param_dict, eval=True)
@@ -250,10 +252,10 @@ print("DPM (-20) Final Displacement Error:", final_displacement_error)
 
 #####################################################################
 # plots
-font = {'family' : 'normal',
-        'weight' : 'normal',
-        'size'   : 22}
-matplotlib.rc('font', **font)
+# font = {'family' : 'normal',
+#         'weight' : 'normal',
+#         'size'   : 22}
+# matplotlib.rc('font', **font)
 # matplotlib.use('Agg')
 if not os.path.exists("images/"):
 	os.mkdir("images/")
