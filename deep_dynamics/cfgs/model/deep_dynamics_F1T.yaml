@@ -33,17 +33,17 @@ PARAMETERS:
     Min: -0.0
     Max: 0.0
   - Cm1:
-    Min: 1.0
-    Max: 10.0  
+    Min: 0.99
+    Max: 1.01  
   - Cm2:
-    Min: 0.0
-    Max: 10.0
+    Min: -0.0
+    Max: 0.0
   - Cr0:
-    Min: 0.01
-    Max: 0.2
+    Min: -0.0
+    Max: 0.0
   - Cr2:
-    Min: 0.1
-    Max: 5.0
+    Min: -0.0
+    Max: 0.0
   - Iz: 
     Min: 0.10
     Max: 2.00
@@ -62,7 +62,7 @@ PARAMETERS:
 VEHICLE_SPECS:
   lf: 0.16
   lr: 0.17
-  mass: 3.5
+  mass: 3.47
 MODEL:
   NAME: DeepDynamicsF1T
   HORIZON: 15
