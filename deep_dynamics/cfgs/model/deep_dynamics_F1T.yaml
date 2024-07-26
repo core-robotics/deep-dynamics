@@ -10,10 +10,10 @@ ACTIONS:
 PARAMETERS:
   - Bf:
     Min: 0.1
-    Max: 10.0
+    Max: 3.0
   - Cf:
     Min: 0.1
-    Max: 10.0
+    Max: 3.0
   - Df:
     Min: 10.0
     Max: 50.0
@@ -22,10 +22,10 @@ PARAMETERS:
     Max: 0.0
   - Br:
     Min: 0.1
-    Max: 10.0
+    Max: 3.0
   - Cr:
     Min: 0.1
-    Max: 10.0
+    Max: 3.0
   - Dr:
     Min: 10.0
     Max: 50.0
