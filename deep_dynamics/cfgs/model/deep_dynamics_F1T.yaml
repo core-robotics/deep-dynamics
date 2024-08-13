@@ -9,25 +9,25 @@ ACTIONS:
   - STEERING_CMD
 PARAMETERS:
   - Bf:
-    Min: 0.1
-    Max: 3.0
+    Min: 1.0
+    Max: 2.0
   - Cf:
-    Min: 0.1
-    Max: 3.0
+    Min: 1.0
+    Max: 2.0
   - Df:
-    Min: 20.0
+    Min: 25.0
     Max: 50.0
   - Ef:
     Min: -0.0
     Max: 0.0
   - Br:
-    Min: 0.1
-    Max: 3.0
+    Min: 1.0
+    Max: 2.0
   - Cr:
-    Min: 0.1
-    Max: 3.0
+    Min: 1.0
+    Max: 2.0
   - Dr:
-    Min: 20.0
+    Min: 25.0
     Max: 50.0
   - Er:
     Min: -0.0
@@ -45,8 +45,8 @@ PARAMETERS:
     Min: -0.0
     Max: 0.0
   - Iz: 
-    Min: 0.00
-    Max: 0.10
+    Min: 0.02
+    Max: 0.06
   - Shf:
     Min: -0.0
     Max: 0.0
