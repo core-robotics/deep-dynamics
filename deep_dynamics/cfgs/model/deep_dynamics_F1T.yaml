@@ -15,7 +15,7 @@ PARAMETERS:
     Min: 0.1
     Max: 3.0
   - Df:
-    Min: 10.0
+    Min: 20.0
     Max: 50.0
   - Ef:
     Min: -0.0
@@ -27,14 +27,14 @@ PARAMETERS:
     Min: 0.1
     Max: 3.0
   - Dr:
-    Min: 10.0
+    Min: 20.0
     Max: 50.0
   - Er:
     Min: -0.0
     Max: 0.0
   - Cm1:
-    Min: 0.99
-    Max: 1.01  
+    Min: 1.000
+    Max: 1.000  
   - Cm2:
     Min: -0.0
     Max: 0.0
@@ -45,8 +45,8 @@ PARAMETERS:
     Min: -0.0
     Max: 0.0
   - Iz: 
-    Min: 0.10
-    Max: 2.00
+    Min: 0.00
+    Max: 0.10
   - Shf:
     Min: -0.0
     Max: 0.0
