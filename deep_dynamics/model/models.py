@@ -300,7 +300,7 @@ class DeepDynamicsModelF1T(ModelBase):
         alphaf = steering - torch.atan2(self.vehicle_specs["lf"]*state_action_dict["YAW_RATE"] + state_action_dict["VY"], torch.abs(state_action_dict["VX"]))
         alphar = torch.atan2((self.vehicle_specs["lr"]*state_action_dict["YAW_RATE"] - state_action_dict["VY"]), torch.abs(state_action_dict["VX"])) 
         beta= torch.atan2(state_action_dict["VY"], state_action_dict["VX"])
-        Frx = self.vehicle_specs["mass"] *throttle*torch.cos(beta)
+        Frx = self.vehicle_specs["mass"] *throttle*torch.cos(beta)+self.vehicle_specs["mass"]*state_action_dict["YAW_RATE"]*(state_action_dict["VX"]*torch.cos(beta)+state_action_dict["VY"]*torch.sin(beta))*torch.sin(beta)
         Ffy = sys_param_dict["Df"] * torch.sin(sys_param_dict["Cf"] * torch.atan(sys_param_dict["Bf"] * alphaf))
         Fry = sys_param_dict["Dr"] * torch.sin(sys_param_dict["Cr"] * torch.atan(sys_param_dict["Br"] * alphar))
         dxdt = torch.zeros(len(x), 3).to(device)
