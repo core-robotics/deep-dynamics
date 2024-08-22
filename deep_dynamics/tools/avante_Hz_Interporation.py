@@ -59,9 +59,16 @@ def process_bag_data(bag, topics, proj):
             # 좌표 오프셋 적용
             x -= x_offset
             y -= y_offset
+            
+            
+            
 
             # Azimuth to yaw 변환
             yaw = convert_azimuth_to_yaw(msg.azimuth)
+            
+            # 좌표 차량 앞 방향으로 이동
+            x += 1.8 * np.cos(yaw)
+            y += 1.8 * np.sin(yaw)
 
             # 속도 계산
             vx, vy = calculate_velocity(msg.north_velocity, msg.east_velocity, yaw)
@@ -69,11 +76,13 @@ def process_bag_data(bag, topics, proj):
             # 데이터 저장
             store_data(data, time, x, y, yaw, vx, vy, prev_yaw, prev_time, topic)
 
-            prev_yaw, prev_time = yaw, time
+            # prev_yaw, prev_time = yaw, time
 
         elif topic == topics['steering']:  # Steering Data 처리
             steer_angle = np.deg2rad(msg.eps.steer_angle / 12.9)
             data['steering'][topic].append((time, steer_angle))
+            yaw_rate = np.deg2rad(msg.imu_brake.yaw_rate)
+            data['local_w'][topic].append((time, yaw_rate))
 
         elif topic == topics['accel']:  # Acceleration Data 처리
             data['accel'][topic].append((time, msg.control_command.accel))
@@ -103,13 +112,13 @@ def store_data(data, time, x, y, yaw, vx, vy, prev_yaw, prev_time, topic):
     data['local_vx'][topic].append((time, vx))
     data['local_vy'][topic].append((time, vy))
 
-    if prev_yaw is not None and prev_time is not None:
-        delta_yaw = normalize_angle(yaw - prev_yaw)
-        delta_time = time - prev_time
-        angular_velocity = delta_yaw / delta_time if delta_time != 0 else 0
-        data['local_w'][topic].append((time, angular_velocity))
-    else:
-        data['local_w'][topic].append((time, 0))
+    # if prev_yaw is not None and prev_time is not None:
+    #     delta_yaw = normalize_angle(yaw - prev_yaw)
+    #     delta_time = time - prev_time
+    #     angular_velocity = delta_yaw / delta_time if delta_time != 0 else 0
+    #     data['local_w'][topic].append((time, angular_velocity))
+    # else:
+    #     data['local_w'][topic].append((time, 0))
 
 # 각도를 -pi ~ pi 범위로 정규화하는 함수
 def normalize_angle(angle):
@@ -138,7 +147,7 @@ def save_resampled_data(data, topics, min_time, max_time, sampling_time, csv_fil
     interpolated_yaw = interpolate_data(data['global_yaw'][topics['gps']], new_times)
     interpolated_vx = interpolate_data(data['local_vx'][topics['gps']], new_times)
     interpolated_vy = interpolate_data(data['local_vy'][topics['gps']], new_times)
-    interpolated_w = interpolate_data(data['local_w'][topics['gps']], new_times)
+    interpolated_w = interpolate_data(data['local_w'][topics['steering']], new_times)
     interpolated_steering = interpolate_data(data['steering'][topics['steering']], new_times)
     interpolated_accel = interpolate_data(data['accel'][topics['accel']], new_times)
 
@@ -175,7 +184,7 @@ def main():
     min_time, max_time = min(all_times), max(all_times)
 
     # 데이터 보간 및 저장
-    csv_file = '/mnt/d/vehicle_data_resampled_4.csv'
+    csv_file = '/mnt/d/vehicle_data_resampled_5.csv'
     save_resampled_data(data, topics, min_time, max_time, sampling_time, csv_file)
 
 # 실행

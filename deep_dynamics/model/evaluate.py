@@ -97,7 +97,7 @@ if __name__ == "__main__":
         param_dict = yaml.load(f, Loader=yaml.SafeLoader)
     model = string_to_model[param_dict["MODEL"]["NAME"]](param_dict, eval=True)
     model.to(device)
-    model.load_state_dict(torch.load(argdict["model_state_dict"]))
+    model.load_state_dict(torch.load(argdict["model_state_dict"], weights_only=True))
     data_npy = np.load(argdict["dataset_file"])
     with open(os.path.join(os.path.dirname(argdict["model_state_dict"]), "scaler.pkl"), "rb") as f:
         scaler = pickle.load(f)
