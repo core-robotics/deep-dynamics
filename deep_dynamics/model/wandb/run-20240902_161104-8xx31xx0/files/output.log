@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "/home/a/deep-dynamics/deep_dynamics/model/train.py", line 144, in <module>
+    train(model, train_data_loader, val_data_loader, argdict["experiment_name"], argdict["log_wandb"], output_dir)
+  File "/home/a/deep-dynamics/deep_dynamics/model/train.py", line 61, in train
+    output, h, _ = model(inputs, norm_inputs, h)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1603, in _call_impl
+    result = forward_call(*args, **kwargs)
+  File "/home/a/deep-dynamics/deep_dynamics/model/models.py", line 96, in forward
+    ff = self.feed_forward[i](ff)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 117, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x75 and 25x436)
+Traceback (most recent call last):
+  File "/home/a/deep-dynamics/deep_dynamics/model/train.py", line 144, in <module>
+    train(model, train_data_loader, val_data_loader, argdict["experiment_name"], argdict["log_wandb"], output_dir)
+  File "/home/a/deep-dynamics/deep_dynamics/model/train.py", line 61, in train
+    output, h, _ = model(inputs, norm_inputs, h)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1603, in _call_impl
+    result = forward_call(*args, **kwargs)
+  File "/home/a/deep-dynamics/deep_dynamics/model/models.py", line 96, in forward
+    ff = self.feed_forward[i](ff)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/a/.conda/envs/deep_dynamics/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 117, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x75 and 25x436)

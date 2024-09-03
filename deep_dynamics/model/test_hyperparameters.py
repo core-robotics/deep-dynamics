@@ -34,7 +34,8 @@ def test_hyperparams(model_cfg, log_wandb):
         learning_rate = float(hyperparam_values[3])
         horizon = int(hyperparam_values[4])
         gru_layers = int(hyperparam_values[5])
-        dataset_file = "../data/LVMS_23_01_04_A_{}.npz".format(horizon)
+        dataset_file = "../data/2024-09-02-13-43-30-ddn_state0_{}.npz".format(horizon)
+        # dataset_file = "../data/LVMS_23_01_04_A_{}.npz".format(horizon)
         # dataset_file = "../data/DYN-PP-ETHZMobil_{}.npz".format(horizon)
         # dataset_file = "../data/DYN-PP-ETHZ_{}.npz".format(horizon)
         with open(model_cfg, 'rb') as f:

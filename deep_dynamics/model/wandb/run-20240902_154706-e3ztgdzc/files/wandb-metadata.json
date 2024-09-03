@@ -1,0 +1,173 @@
+{
+    "os": "Linux-5.15.153.1-microsoft-standard-WSL2-x86_64-with-glibc2.31",
+    "python": "3.10.14",
+    "heartbeatAt": "2024-09-02T06:47:06.880241",
+    "startedAt": "2024-09-02T06:47:06.112270",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "../cfgs/model/deep_dynamics_F1T.yaml",
+        "../data/2024-09-02-13-43-30-ddn_state0_15.npz",
+        "sim5",
+        "--log_wandb"
+    ],
+    "state": "running",
+    "program": "/home/a/deep-dynamics/deep_dynamics/model/train.py",
+    "codePathLocal": "train.py",
+    "codePath": "deep_dynamics/model/train.py",
+    "git": {
+        "remote": "git@github.com:core-robotics/deep-dynamics.git",
+        "commit": "8fd8ee7a684a0d0c98687db0c2e21870be12820d"
+    },
+    "email": "tlstoddk99@gmail.com",
+    "root": "/home/a/deep-dynamics",
+    "host": "kwdo",
+    "username": "a",
+    "executable": "/home/a/.conda/envs/deep_dynamics/bin/python3",
+    "cpu_count": 12,
+    "cpu_count_logical": 24,
+    "cpu_freq": {
+        "current": 3417.6019999999994,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3417.602,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 1006.853931427002,
+            "used": 48.48394012451172
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3080",
+            "memory_total": 10737418240
+        }
+    ],
+    "memory": {
+        "total": 15.503437042236328
+    }
+}

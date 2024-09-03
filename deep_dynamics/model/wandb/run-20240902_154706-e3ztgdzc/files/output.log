@@ -1,0 +1,446 @@
+Validation loss decreased (inf --> 0.060041).  Saving model ...
+Epoch: 1/400... Loss: 0.064547... Val Loss: 0.060041
+Validation loss decreased (0.060041 --> 0.059695).  Saving model ...
+Epoch: 2/400... Loss: 0.061420... Val Loss: 0.059695
+Validation loss decreased (0.059695 --> 0.059350).  Saving model ...
+Epoch: 3/400... Loss: 0.060998... Val Loss: 0.059350
+Validation loss decreased (0.059350 --> 0.048969).  Saving model ...
+Epoch: 4/400... Loss: 0.056412... Val Loss: 0.048969
+Validation loss decreased (0.048969 --> 0.046061).  Saving model ...
+Epoch: 5/400... Loss: 0.048093... Val Loss: 0.046061
+Validation loss decreased (0.046061 --> 0.045491).  Saving model ...
+Epoch: 6/400... Loss: 0.046328... Val Loss: 0.045491
+Validation loss decreased (0.045491 --> 0.044800).  Saving model ...
+Epoch: 7/400... Loss: 0.045775... Val Loss: 0.044800
+Validation loss decreased (0.044800 --> 0.043282).  Saving model ...
+Epoch: 8/400... Loss: 0.045178... Val Loss: 0.043282
+Validation loss decreased (0.043282 --> 0.041526).  Saving model ...
+Epoch: 9/400... Loss: 0.042924... Val Loss: 0.041526
+Validation loss decreased (0.041526 --> 0.041020).  Saving model ...
+Epoch: 10/400... Loss: 0.042233... Val Loss: 0.041020
+Validation loss decreased (0.041020 --> 0.040866).  Saving model ...
+Epoch: 11/400... Loss: 0.042017... Val Loss: 0.040866
+Validation loss decreased (0.040866 --> 0.040787).  Saving model ...
+Epoch: 12/400... Loss: 0.041893... Val Loss: 0.040787
+Validation loss decreased (0.040787 --> 0.040636).  Saving model ...
+Epoch: 13/400... Loss: 0.041805... Val Loss: 0.040636
+Validation loss decreased (0.040636 --> 0.040575).  Saving model ...
+Epoch: 14/400... Loss: 0.041755... Val Loss: 0.040575
+Validation loss decreased (0.040575 --> 0.040549).  Saving model ...
+Epoch: 15/400... Loss: 0.041687... Val Loss: 0.040549
+Validation loss decreased (0.040549 --> 0.040507).  Saving model ...
+Epoch: 16/400... Loss: 0.041612... Val Loss: 0.040507
+Epoch: 17/400... Loss: 0.041603... Val Loss: 0.040537
+Validation loss decreased (0.040507 --> 0.040426).  Saving model ...
+Epoch: 18/400... Loss: 0.041550... Val Loss: 0.040426
+Validation loss decreased (0.040426 --> 0.040385).  Saving model ...
+Epoch: 19/400... Loss: 0.041495... Val Loss: 0.040385
+Epoch: 20/400... Loss: 0.041479... Val Loss: 0.040429
+Epoch: 21/400... Loss: 0.041509... Val Loss: 0.040432
+Validation loss decreased (0.040385 --> 0.040354).  Saving model ...
+Epoch: 22/400... Loss: 0.041421... Val Loss: 0.040354
+Validation loss decreased (0.040354 --> 0.040262).  Saving model ...
+Epoch: 23/400... Loss: 0.041396... Val Loss: 0.040262
+Validation loss decreased (0.040262 --> 0.040232).  Saving model ...
+Epoch: 24/400... Loss: 0.041385... Val Loss: 0.040232
+Epoch: 25/400... Loss: 0.041298... Val Loss: 0.040246
+Epoch: 26/400... Loss: 0.041445... Val Loss: 0.040380
+Epoch: 27/400... Loss: 0.041399... Val Loss: 0.040279
+Validation loss decreased (0.040232 --> 0.040230).  Saving model ...
+Epoch: 28/400... Loss: 0.041312... Val Loss: 0.040230
+Validation loss decreased (0.040230 --> 0.040191).  Saving model ...
+Epoch: 29/400... Loss: 0.041297... Val Loss: 0.040191
+Validation loss decreased (0.040191 --> 0.040184).  Saving model ...
+Epoch: 30/400... Loss: 0.041243... Val Loss: 0.040184
+Validation loss decreased (0.040184 --> 0.040182).  Saving model ...
+Epoch: 31/400... Loss: 0.041273... Val Loss: 0.040182
+Epoch: 32/400... Loss: 0.041258... Val Loss: 0.040185
+Validation loss decreased (0.040182 --> 0.040157).  Saving model ...
+Epoch: 33/400... Loss: 0.041253... Val Loss: 0.040157
+Epoch: 34/400... Loss: 0.041242... Val Loss: 0.040175
+Epoch: 35/400... Loss: 0.041232... Val Loss: 0.040170
+Epoch: 36/400... Loss: 0.041253... Val Loss: 0.040174
+Epoch: 37/400... Loss: 0.041234... Val Loss: 0.040188
+Validation loss decreased (0.040157 --> 0.040144).  Saving model ...
+Epoch: 38/400... Loss: 0.041216... Val Loss: 0.040144
+Epoch: 39/400... Loss: 0.041230... Val Loss: 0.040161
+Epoch: 40/400... Loss: 0.041215... Val Loss: 0.040182
+Validation loss decreased (0.040144 --> 0.040139).  Saving model ...
+Epoch: 41/400... Loss: 0.041217... Val Loss: 0.040139
+Epoch: 42/400... Loss: 0.041225... Val Loss: 0.040143
+Validation loss decreased (0.040139 --> 0.040115).  Saving model ...
+Epoch: 43/400... Loss: 0.041221... Val Loss: 0.040115
+Validation loss decreased (0.040115 --> 0.040112).  Saving model ...
+Epoch: 44/400... Loss: 0.041190... Val Loss: 0.040112
+Epoch: 45/400... Loss: 0.041220... Val Loss: 0.040132
+Validation loss decreased (0.040112 --> 0.040101).  Saving model ...
+Epoch: 46/400... Loss: 0.041159... Val Loss: 0.040101
+Epoch: 47/400... Loss: 0.041202... Val Loss: 0.040107
+Validation loss decreased (0.040101 --> 0.040095).  Saving model ...
+Epoch: 48/400... Loss: 0.041187... Val Loss: 0.040095
+Epoch: 49/400... Loss: 0.041194... Val Loss: 0.040120
+Epoch: 50/400... Loss: 0.041202... Val Loss: 0.040105
+Epoch: 51/400... Loss: 0.041196... Val Loss: 0.040105
+Epoch: 52/400... Loss: 0.041143... Val Loss: 0.040106
+Epoch: 53/400... Loss: 0.041173... Val Loss: 0.040131
+Validation loss decreased (0.040095 --> 0.040083).  Saving model ...
+Epoch: 54/400... Loss: 0.041179... Val Loss: 0.040083
+Epoch: 55/400... Loss: 0.041163... Val Loss: 0.040093
+Epoch: 56/400... Loss: 0.041169... Val Loss: 0.040104
+Epoch: 57/400... Loss: 0.041173... Val Loss: 0.040093
+Epoch: 58/400... Loss: 0.041164... Val Loss: 0.040113
+Epoch: 59/400... Loss: 0.041170... Val Loss: 0.040089
+Epoch: 60/400... Loss: 0.041166... Val Loss: 0.040105
+Epoch: 61/400... Loss: 0.041168... Val Loss: 0.040094
+Validation loss decreased (0.040083 --> 0.040077).  Saving model ...
+Epoch: 62/400... Loss: 0.041168... Val Loss: 0.040077
+Validation loss decreased (0.040077 --> 0.040075).  Saving model ...
+Epoch: 63/400... Loss: 0.041149... Val Loss: 0.040075
+Validation loss decreased (0.040075 --> 0.040070).  Saving model ...
+Epoch: 64/400... Loss: 0.041153... Val Loss: 0.040070
+Epoch: 65/400... Loss: 0.041146... Val Loss: 0.040082
+Epoch: 66/400... Loss: 0.041160... Val Loss: 0.040090
+Epoch: 67/400... Loss: 0.041119... Val Loss: 0.040096
+Epoch: 68/400... Loss: 0.041180... Val Loss: 0.040160
+Validation loss decreased (0.040070 --> 0.040067).  Saving model ...
+Epoch: 69/400... Loss: 0.041162... Val Loss: 0.040067
+Epoch: 70/400... Loss: 0.041157... Val Loss: 0.040099
+Epoch: 71/400... Loss: 0.041173... Val Loss: 0.040098
+Epoch: 72/400... Loss: 0.041170... Val Loss: 0.040096
+Validation loss decreased (0.040067 --> 0.040051).  Saving model ...
+Epoch: 73/400... Loss: 0.041150... Val Loss: 0.040051
+Epoch: 74/400... Loss: 0.041137... Val Loss: 0.040066
+Epoch: 75/400... Loss: 0.041131... Val Loss: 0.040063
+Epoch: 76/400... Loss: 0.041142... Val Loss: 0.040055
+Epoch: 77/400... Loss: 0.041148... Val Loss: 0.040110
+Epoch: 78/400... Loss: 0.041168... Val Loss: 0.040066
+Validation loss decreased (0.040051 --> 0.040050).  Saving model ...
+Epoch: 79/400... Loss: 0.041122... Val Loss: 0.040050
+Epoch: 80/400... Loss: 0.041108... Val Loss: 0.040055
+Epoch: 81/400... Loss: 0.041109... Val Loss: 0.040080
+Epoch: 82/400... Loss: 0.041132... Val Loss: 0.040065
+Epoch: 83/400... Loss: 0.041129... Val Loss: 0.040059
+Epoch: 84/400... Loss: 0.041110... Val Loss: 0.040058
+Validation loss decreased (0.040050 --> 0.040047).  Saving model ...
+Epoch: 85/400... Loss: 0.041111... Val Loss: 0.040047
+Epoch: 86/400... Loss: 0.041126... Val Loss: 0.040120
+Epoch: 87/400... Loss: 0.041154... Val Loss: 0.040063
+Epoch: 88/400... Loss: 0.041127... Val Loss: 0.040072
+Epoch: 89/400... Loss: 0.041114... Val Loss: 0.040059
+Epoch: 90/400... Loss: 0.041121... Val Loss: 0.040063
+Epoch: 91/400... Loss: 0.041108... Val Loss: 0.040053
+Epoch: 92/400... Loss: 0.041120... Val Loss: 0.040078
+Epoch: 93/400... Loss: 0.041140... Val Loss: 0.040108
+Epoch: 94/400... Loss: 0.041156... Val Loss: 0.040077
+Epoch: 95/400... Loss: 0.041090... Val Loss: 0.040049
+Epoch: 96/400... Loss: 0.041130... Val Loss: 0.040079
+Epoch: 97/400... Loss: 0.041130... Val Loss: 0.040051
+Epoch: 98/400... Loss: 0.041121... Val Loss: 0.040050
+Epoch: 99/400... Loss: 0.041149... Val Loss: 0.040081
+Validation loss decreased (0.040047 --> 0.040041).  Saving model ...
+Epoch: 100/400... Loss: 0.041156... Val Loss: 0.040041
+Epoch: 101/400... Loss: 0.041124... Val Loss: 0.040052
+Validation loss decreased (0.040041 --> 0.040040).  Saving model ...
+Epoch: 102/400... Loss: 0.041076... Val Loss: 0.040040
+Epoch: 103/400... Loss: 0.041108... Val Loss: 0.040042
+Validation loss decreased (0.040040 --> 0.040028).  Saving model ...
+Epoch: 104/400... Loss: 0.041105... Val Loss: 0.040028
+Epoch: 105/400... Loss: 0.041122... Val Loss: 0.040039
+Epoch: 106/400... Loss: 0.041109... Val Loss: 0.040034
+Epoch: 107/400... Loss: 0.041121... Val Loss: 0.040045
+Epoch: 108/400... Loss: 0.041118... Val Loss: 0.040041
+Epoch: 109/400... Loss: 0.041118... Val Loss: 0.040052
+Epoch: 110/400... Loss: 0.041105... Val Loss: 0.040048
+Epoch: 111/400... Loss: 0.041122... Val Loss: 0.040039
+Epoch: 112/400... Loss: 0.041113... Val Loss: 0.040051
+Epoch: 113/400... Loss: 0.041129... Val Loss: 0.040044
+Epoch: 114/400... Loss: 0.041111... Val Loss: 0.040036
+Epoch: 115/400... Loss: 0.041106... Val Loss: 0.040051
+Epoch: 116/400... Loss: 0.041131... Val Loss: 0.040052
+Epoch: 117/400... Loss: 0.041125... Val Loss: 0.040064
+Epoch: 118/400... Loss: 0.041109... Val Loss: 0.040038
+Epoch: 119/400... Loss: 0.041114... Val Loss: 0.040052
+Epoch: 120/400... Loss: 0.041110... Val Loss: 0.040032
+Epoch: 121/400... Loss: 0.041077... Val Loss: 0.040049
+Epoch: 122/400... Loss: 0.041099... Val Loss: 0.040064
+Epoch: 123/400... Loss: 0.041117... Val Loss: 0.040061
+Epoch: 124/400... Loss: 0.041111... Val Loss: 0.040045
+Epoch: 125/400... Loss: 0.041114... Val Loss: 0.040036
+Epoch: 126/400... Loss: 0.041111... Val Loss: 0.040033
+Epoch: 127/400... Loss: 0.041126... Val Loss: 0.040058
+Epoch: 128/400... Loss: 0.041098... Val Loss: 0.040041
+Epoch: 129/400... Loss: 0.041112... Val Loss: 0.040056
+Epoch: 130/400... Loss: 0.041116... Val Loss: 0.040030
+Epoch: 131/400... Loss: 0.041110... Val Loss: 0.040037
+Epoch: 132/400... Loss: 0.041107... Val Loss: 0.040040
+Epoch: 133/400... Loss: 0.041117... Val Loss: 0.040046
+Epoch: 134/400... Loss: 0.041116... Val Loss: 0.040063
+Epoch: 135/400... Loss: 0.041130... Val Loss: 0.040041
+Epoch: 136/400... Loss: 0.041107... Val Loss: 0.040039
+Epoch: 137/400... Loss: 0.041113... Val Loss: 0.040042
+Epoch: 138/400... Loss: 0.041105... Val Loss: 0.040045
+Epoch: 139/400... Loss: 0.041111... Val Loss: 0.040054
+Epoch: 140/400... Loss: 0.041137... Val Loss: 0.040058
+Epoch: 141/400... Loss: 0.041116... Val Loss: 0.040033
+Epoch: 142/400... Loss: 0.041100... Val Loss: 0.040037
+Epoch: 143/400... Loss: 0.041093... Val Loss: 0.040037
+Epoch: 144/400... Loss: 0.041107... Val Loss: 0.040033
+Epoch: 145/400... Loss: 0.041093... Val Loss: 0.040052
+Epoch: 146/400... Loss: 0.041099... Val Loss: 0.040036
+Epoch: 147/400... Loss: 0.041105... Val Loss: 0.040033
+Epoch: 148/400... Loss: 0.041089... Val Loss: 0.040035
+Epoch: 149/400... Loss: 0.041125... Val Loss: 0.040107
+Epoch: 150/400... Loss: 0.041110... Val Loss: 0.040058
+Epoch: 151/400... Loss: 0.041107... Val Loss: 0.040055
+Epoch: 152/400... Loss: 0.041104... Val Loss: 0.040114
+Epoch: 153/400... Loss: 0.041159... Val Loss: 0.040091
+Validation loss decreased (0.040028 --> 0.040018).  Saving model ...
+Epoch: 154/400... Loss: 0.041107... Val Loss: 0.040018
+Epoch: 155/400... Loss: 0.041096... Val Loss: 0.040034
+Epoch: 156/400... Loss: 0.041095... Val Loss: 0.040023
+Epoch: 157/400... Loss: 0.041082... Val Loss: 0.040020
+Epoch: 158/400... Loss: 0.041090... Val Loss: 0.040022
+Epoch: 159/400... Loss: 0.041065... Val Loss: 0.040031
+Epoch: 160/400... Loss: 0.041089... Val Loss: 0.040028
+Epoch: 161/400... Loss: 0.041091... Val Loss: 0.040034
+Epoch: 162/400... Loss: 0.041088... Val Loss: 0.040028
+Epoch: 163/400... Loss: 0.041102... Val Loss: 0.040032
+Epoch: 164/400... Loss: 0.041066... Val Loss: 0.040048
+Epoch: 165/400... Loss: 0.041096... Val Loss: 0.040052
+Epoch: 166/400... Loss: 0.041102... Val Loss: 0.040045
+Epoch: 167/400... Loss: 0.041090... Val Loss: 0.040032
+Epoch: 168/400... Loss: 0.041103... Val Loss: 0.040054
+Epoch: 169/400... Loss: 0.041106... Val Loss: 0.040060
+Epoch: 170/400... Loss: 0.041105... Val Loss: 0.040056
+Epoch: 171/400... Loss: 0.041107... Val Loss: 0.040044
+Epoch: 172/400... Loss: 0.041104... Val Loss: 0.040062
+Epoch: 173/400... Loss: 0.041103... Val Loss: 0.040074
+Epoch: 174/400... Loss: 0.041120... Val Loss: 0.040040
+Epoch: 175/400... Loss: 0.041110... Val Loss: 0.040078
+Epoch: 176/400... Loss: 0.041097... Val Loss: 0.040060
+Epoch: 177/400... Loss: 0.041106... Val Loss: 0.040048
+Epoch: 178/400... Loss: 0.041098... Val Loss: 0.040023
+Epoch: 179/400... Loss: 0.041101... Val Loss: 0.040052
+Epoch: 180/400... Loss: 0.041099... Val Loss: 0.040027
+Epoch: 181/400... Loss: 0.041100... Val Loss: 0.040036
+Epoch: 182/400... Loss: 0.041109... Val Loss: 0.040030
+Epoch: 183/400... Loss: 0.041092... Val Loss: 0.040022
+Epoch: 184/400... Loss: 0.041119... Val Loss: 0.040088
+Epoch: 185/400... Loss: 0.041114... Val Loss: 0.040054
+Epoch: 186/400... Loss: 0.041103... Val Loss: 0.040062
+Epoch: 187/400... Loss: 0.041108... Val Loss: 0.040059
+Epoch: 188/400... Loss: 0.041101... Val Loss: 0.040048
+Epoch: 189/400... Loss: 0.041090... Val Loss: 0.040038
+Epoch: 190/400... Loss: 0.041077... Val Loss: 0.040030
+Epoch: 191/400... Loss: 0.041080... Val Loss: 0.040056
+Epoch: 192/400... Loss: 0.041098... Val Loss: 0.040033
+Epoch: 193/400... Loss: 0.041092... Val Loss: 0.040029
+Epoch: 194/400... Loss: 0.041098... Val Loss: 0.040036
+Epoch: 195/400... Loss: 0.041089... Val Loss: 0.040056
+Epoch: 196/400... Loss: 0.041113... Val Loss: 0.040029
+Epoch: 197/400... Loss: 0.041069... Val Loss: 0.040037
+Epoch: 198/400... Loss: 0.041095... Val Loss: 0.040053
+Epoch: 199/400... Loss: 0.041105... Val Loss: 0.040069
+Epoch: 200/400... Loss: 0.041100... Val Loss: 0.040048
+Epoch: 201/400... Loss: 0.041096... Val Loss: 0.040056
+Epoch: 202/400... Loss: 0.041097... Val Loss: 0.040026
+Epoch: 203/400... Loss: 0.041103... Val Loss: 0.040053
+Epoch: 204/400... Loss: 0.041098... Val Loss: 0.040049
+Epoch: 205/400... Loss: 0.041106... Val Loss: 0.040042
+Epoch: 206/400... Loss: 0.041130... Val Loss: 0.040048
+Epoch: 207/400... Loss: 0.041106... Val Loss: 0.040042
+Epoch: 208/400... Loss: 0.041095... Val Loss: 0.040033
+Epoch: 209/400... Loss: 0.041099... Val Loss: 0.040037
+Epoch: 210/400... Loss: 0.041078... Val Loss: 0.040022
+Epoch: 211/400... Loss: 0.041093... Val Loss: 0.040036
+Epoch: 212/400... Loss: 0.041082... Val Loss: 0.040025
+Epoch: 213/400... Loss: 0.041090... Val Loss: 0.040030
+Epoch: 214/400... Loss: 0.041094... Val Loss: 0.040029
+Epoch: 215/400... Loss: 0.041076... Val Loss: 0.040019
+Epoch: 216/400... Loss: 0.041092... Val Loss: 0.040030
+Epoch: 217/400... Loss: 0.041080... Val Loss: 0.040049
+Epoch: 218/400... Loss: 0.041092... Val Loss: 0.040034
+Epoch: 219/400... Loss: 0.041082... Val Loss: 0.040034
+Epoch: 220/400... Loss: 0.041099... Val Loss: 0.040033
+Epoch: 221/400... Loss: 0.041093... Val Loss: 0.040054
+Epoch: 222/400... Loss: 0.041090... Val Loss: 0.040062
+Epoch: 223/400... Loss: 0.041098... Val Loss: 0.040037
+Epoch: 224/400... Loss: 0.041080... Val Loss: 0.040050
+Epoch: 225/400... Loss: 0.041093... Val Loss: 0.040048
+Epoch: 226/400... Loss: 0.041086... Val Loss: 0.040040
+Epoch: 227/400... Loss: 0.041087... Val Loss: 0.040034
+Epoch: 228/400... Loss: 0.041081... Val Loss: 0.040035
+Epoch: 229/400... Loss: 0.041081... Val Loss: 0.040033
+Epoch: 230/400... Loss: 0.041105... Val Loss: 0.040047
+Epoch: 231/400... Loss: 0.041103... Val Loss: 0.040042
+Epoch: 232/400... Loss: 0.041116... Val Loss: 0.040057
+Epoch: 233/400... Loss: 0.041067... Val Loss: 0.040034
+Epoch: 234/400... Loss: 0.041081... Val Loss: 0.040046
+Epoch: 235/400... Loss: 0.041092... Val Loss: 0.040034
+Epoch: 236/400... Loss: 0.041087... Val Loss: 0.040034
+Epoch: 237/400... Loss: 0.041075... Val Loss: 0.040054
+Epoch: 238/400... Loss: 0.041176... Val Loss: 0.040096
+Epoch: 239/400... Loss: 0.041157... Val Loss: 0.040299
+Epoch: 240/400... Loss: 0.041234... Val Loss: 0.040073
+Epoch: 241/400... Loss: 0.041104... Val Loss: 0.040034
+Epoch: 242/400... Loss: 0.041086... Val Loss: 0.040032
+Validation loss decreased (0.040018 --> 0.040016).  Saving model ...
+Epoch: 243/400... Loss: 0.041096... Val Loss: 0.040016
+Epoch: 244/400... Loss: 0.041091... Val Loss: 0.040020
+Epoch: 245/400... Loss: 0.041080... Val Loss: 0.040018
+Epoch: 246/400... Loss: 0.041058... Val Loss: 0.040025
+Epoch: 247/400... Loss: 0.041078... Val Loss: 0.040020
+Epoch: 248/400... Loss: 0.041088... Val Loss: 0.040029
+Epoch: 249/400... Loss: 0.041082... Val Loss: 0.040025
+Epoch: 250/400... Loss: 0.041068... Val Loss: 0.040022
+Epoch: 251/400... Loss: 0.041092... Val Loss: 0.040033
+Epoch: 252/400... Loss: 0.041070... Val Loss: 0.040024
+Epoch: 253/400... Loss: 0.041089... Val Loss: 0.040028
+Epoch: 254/400... Loss: 0.041091... Val Loss: 0.040039
+Epoch: 255/400... Loss: 0.041093... Val Loss: 0.040030
+Epoch: 256/400... Loss: 0.041069... Val Loss: 0.040026
+Epoch: 257/400... Loss: 0.041089... Val Loss: 0.040024
+Epoch: 258/400... Loss: 0.041088... Val Loss: 0.040042
+Epoch: 259/400... Loss: 0.041086... Val Loss: 0.040028
+Epoch: 260/400... Loss: 0.041078... Val Loss: 0.040038
+Epoch: 261/400... Loss: 0.041087... Val Loss: 0.040048
+Epoch: 262/400... Loss: 0.041076... Val Loss: 0.040034
+Epoch: 263/400... Loss: 0.041086... Val Loss: 0.040029
+Epoch: 264/400... Loss: 0.041080... Val Loss: 0.040051
+Epoch: 265/400... Loss: 0.041088... Val Loss: 0.040051
+Epoch: 266/400... Loss: 0.041081... Val Loss: 0.040043
+Epoch: 267/400... Loss: 0.041091... Val Loss: 0.040043
+Epoch: 268/400... Loss: 0.041093... Val Loss: 0.040041
+Epoch: 269/400... Loss: 0.041051... Val Loss: 0.040054
+Epoch: 270/400... Loss: 0.041069... Val Loss: 0.040062
+Epoch: 271/400... Loss: 0.041105... Val Loss: 0.040040
+Epoch: 272/400... Loss: 0.041092... Val Loss: 0.040034
+Epoch: 273/400... Loss: 0.041091... Val Loss: 0.040029
+Epoch: 274/400... Loss: 0.041101... Val Loss: 0.040054
+Epoch: 275/400... Loss: 0.041061... Val Loss: 0.040074
+Epoch: 276/400... Loss: 0.041093... Val Loss: 0.040037
+Epoch: 277/400... Loss: 0.041090... Val Loss: 0.040037
+Epoch: 278/400... Loss: 0.041092... Val Loss: 0.040033
+Epoch: 279/400... Loss: 0.041074... Val Loss: 0.040033
+Epoch: 280/400... Loss: 0.041082... Val Loss: 0.040039
+Epoch: 281/400... Loss: 0.041081... Val Loss: 0.040033
+Epoch: 282/400... Loss: 0.041080... Val Loss: 0.040032
+Epoch: 283/400... Loss: 0.041089... Val Loss: 0.040030
+Epoch: 284/400... Loss: 0.041088... Val Loss: 0.040043
+Epoch: 285/400... Loss: 0.041084... Val Loss: 0.040034
+Epoch: 286/400... Loss: 0.041089... Val Loss: 0.040047
+Epoch: 287/400... Loss: 0.041071... Val Loss: 0.040029
+Epoch: 288/400... Loss: 0.041076... Val Loss: 0.040034
+Epoch: 289/400... Loss: 0.041075... Val Loss: 0.040070
+Epoch: 290/400... Loss: 0.041088... Val Loss: 0.040039
+Epoch: 291/400... Loss: 0.041090... Val Loss: 0.040043
+Epoch: 292/400... Loss: 0.041087... Val Loss: 0.040054
+Epoch: 293/400... Loss: 0.041074... Val Loss: 0.040037
+Epoch: 294/400... Loss: 0.041083... Val Loss: 0.040037
+Epoch: 295/400... Loss: 0.041089... Val Loss: 0.040039
+Epoch: 296/400... Loss: 0.041071... Val Loss: 0.040101
+Epoch: 297/400... Loss: 0.041144... Val Loss: 0.040090
+Epoch: 298/400... Loss: 0.041099... Val Loss: 0.040082
+Epoch: 299/400... Loss: 0.041083... Val Loss: 0.040023
+Epoch: 300/400... Loss: 0.041092... Val Loss: 0.040138
+Epoch: 301/400... Loss: 0.041285... Val Loss: 0.040158
+Epoch: 302/400... Loss: 0.041117... Val Loss: 0.040059
+Epoch: 303/400... Loss: 0.041065... Val Loss: 0.040057
+Epoch: 304/400... Loss: 0.041072... Val Loss: 0.040046
+Epoch: 305/400... Loss: 0.041055... Val Loss: 0.040042
+Epoch: 306/400... Loss: 0.041074... Val Loss: 0.040034
+Epoch: 307/400... Loss: 0.041066... Val Loss: 0.040034
+Epoch: 308/400... Loss: 0.041067... Val Loss: 0.040040
+Epoch: 309/400... Loss: 0.041063... Val Loss: 0.040024
+Epoch: 310/400... Loss: 0.041086... Val Loss: 0.040023
+Epoch: 311/400... Loss: 0.041088... Val Loss: 0.040029
+Epoch: 312/400... Loss: 0.041062... Val Loss: 0.040036
+Epoch: 313/400... Loss: 0.041070... Val Loss: 0.040025
+Epoch: 314/400... Loss: 0.041073... Val Loss: 0.040036
+Epoch: 315/400... Loss: 0.041083... Val Loss: 0.040023
+Validation loss decreased (0.040016 --> 0.040014).  Saving model ...
+Epoch: 316/400... Loss: 0.041079... Val Loss: 0.040014
+Epoch: 317/400... Loss: 0.041091... Val Loss: 0.040015
+Epoch: 318/400... Loss: 0.041093... Val Loss: 0.040022
+Epoch: 319/400... Loss: 0.041074... Val Loss: 0.040045
+Epoch: 320/400... Loss: 0.041088... Val Loss: 0.040017
+Epoch: 321/400... Loss: 0.041076... Val Loss: 0.040030
+Epoch: 322/400... Loss: 0.041074... Val Loss: 0.040029
+Epoch: 323/400... Loss: 0.041075... Val Loss: 0.040032
+Epoch: 324/400... Loss: 0.041080... Val Loss: 0.040029
+Epoch: 325/400... Loss: 0.041074... Val Loss: 0.040035
+Epoch: 326/400... Loss: 0.041090... Val Loss: 0.040043
+Epoch: 327/400... Loss: 0.041091... Val Loss: 0.040030
+Epoch: 328/400... Loss: 0.041083... Val Loss: 0.040024
+Epoch: 329/400... Loss: 0.041082... Val Loss: 0.040031
+Epoch: 330/400... Loss: 0.041078... Val Loss: 0.040039
+Epoch: 331/400... Loss: 0.041080... Val Loss: 0.040028
+Epoch: 332/400... Loss: 0.041087... Val Loss: 0.040037
+Epoch: 333/400... Loss: 0.041093... Val Loss: 0.040047
+Epoch: 334/400... Loss: 0.041099... Val Loss: 0.040020
+Epoch: 335/400... Loss: 0.041084... Val Loss: 0.040024
+Epoch: 336/400... Loss: 0.041085... Val Loss: 0.040034
+Epoch: 337/400... Loss: 0.041086... Val Loss: 0.040054
+Epoch: 338/400... Loss: 0.041088... Val Loss: 0.040030
+Epoch: 339/400... Loss: 0.041065... Val Loss: 0.040021
+Epoch: 340/400... Loss: 0.041089... Val Loss: 0.040038
+Epoch: 341/400... Loss: 0.041088... Val Loss: 0.040031
+Epoch: 342/400... Loss: 0.041120... Val Loss: 0.040071
+Epoch: 343/400... Loss: 0.041112... Val Loss: 0.040044
+Epoch: 344/400... Loss: 0.041107... Val Loss: 0.040109
+Epoch: 345/400... Loss: 0.041083... Val Loss: 0.040043
+Epoch: 346/400... Loss: 0.041095... Val Loss: 0.040068
+Epoch: 347/400... Loss: 0.041057... Val Loss: 0.040054
+Epoch: 348/400... Loss: 0.041072... Val Loss: 0.040050
+Epoch: 349/400... Loss: 0.041090... Val Loss: 0.040045
+Epoch: 350/400... Loss: 0.041077... Val Loss: 0.040046
+Epoch: 351/400... Loss: 0.041081... Val Loss: 0.040046
+Epoch: 352/400... Loss: 0.041071... Val Loss: 0.040033
+Epoch: 353/400... Loss: 0.041076... Val Loss: 0.040049
+Epoch: 354/400... Loss: 0.041083... Val Loss: 0.040042
+Epoch: 355/400... Loss: 0.041091... Val Loss: 0.040043
+Epoch: 356/400... Loss: 0.041094... Val Loss: 0.040079
+Epoch: 357/400... Loss: 0.041092... Val Loss: 0.040043
+Epoch: 358/400... Loss: 0.041086... Val Loss: 0.040043
+Epoch: 359/400... Loss: 0.041066... Val Loss: 0.040078
+Epoch: 360/400... Loss: 0.041084... Val Loss: 0.040036
+Epoch: 361/400... Loss: 0.041062... Val Loss: 0.040038
+Epoch: 362/400... Loss: 0.041089... Val Loss: 0.040035
+Epoch: 363/400... Loss: 0.041086... Val Loss: 0.040045
+Epoch: 364/400... Loss: 0.041079... Val Loss: 0.040031
+Epoch: 365/400... Loss: 0.041087... Val Loss: 0.040032
+Epoch: 366/400... Loss: 0.041095... Val Loss: 0.040048
+Epoch: 367/400... Loss: 0.041072... Val Loss: 0.040038
+Epoch: 368/400... Loss: 0.041076... Val Loss: 0.040128
+Epoch: 369/400... Loss: 0.041131... Val Loss: 0.040064
+Epoch: 370/400... Loss: 0.041101... Val Loss: 0.040058
+Epoch: 371/400... Loss: 0.041081... Val Loss: 0.040040
+Epoch: 372/400... Loss: 0.041085... Val Loss: 0.040058
+Epoch: 373/400... Loss: 0.041075... Val Loss: 0.040027
+Epoch: 374/400... Loss: 0.041073... Val Loss: 0.040039
+Epoch: 375/400... Loss: 0.041089... Val Loss: 0.040040
+Epoch: 376/400... Loss: 0.041080... Val Loss: 0.040029
+Epoch: 377/400... Loss: 0.041078... Val Loss: 0.040045
+Epoch: 378/400... Loss: 0.041094... Val Loss: 0.040042
+Epoch: 379/400... Loss: 0.041092... Val Loss: 0.040043
+Epoch: 380/400... Loss: 0.041097... Val Loss: 0.040024
+Epoch: 381/400... Loss: 0.041095... Val Loss: 0.040033
+Epoch: 382/400... Loss: 0.041090... Val Loss: 0.040040
+Epoch: 383/400... Loss: 0.041071... Val Loss: 0.040041
+Epoch: 384/400... Loss: 0.041077... Val Loss: 0.040057
+Epoch: 385/400... Loss: 0.041085... Val Loss: 0.040043
+Epoch: 386/400... Loss: 0.041056... Val Loss: 0.040042
+Epoch: 387/400... Loss: 0.041086... Val Loss: 0.040073
+Epoch: 388/400... Loss: 0.041080... Val Loss: 0.040047
+Epoch: 389/400... Loss: 0.041091... Val Loss: 0.040133
+Epoch: 390/400... Loss: 0.041064... Val Loss: 0.040047
+Epoch: 391/400... Loss: 0.041077... Val Loss: 0.040054
+Epoch: 392/400... Loss: 0.041087... Val Loss: 0.040045
+Epoch: 393/400... Loss: 0.041085... Val Loss: 0.040052
+Epoch: 394/400... Loss: 0.041088... Val Loss: 0.040058
+Epoch: 395/400... Loss: 0.041086... Val Loss: 0.040057
+Epoch: 396/400... Loss: 0.041082... Val Loss: 0.040043
+Epoch: 397/400... Loss: 0.041041... Val Loss: 0.040037
+Epoch: 398/400... Loss: 0.041077... Val Loss: 0.040072
+Epoch: 399/400... Loss: 0.041066... Val Loss: 0.040030
+Epoch: 400/400... Loss: 0.041065... Val Loss: 0.040068

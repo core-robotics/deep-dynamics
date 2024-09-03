@@ -16,7 +16,7 @@ def main(model_cfg, log_wandb):
     config = {
         "layers" : tune.choice(range(1,9)),
         "neurons" : tune.randint(4, 256),
-        "batch_size": tune.choice([16, 32, 64, 128]),
+        "batch_size": tune.choice([16, 32, 64, 128, 256]),
         "lr" : tune.uniform(1e-4, 1e-2),
         "horizon": tune.choice(range(1,17)),
         "gru_layers": tune.choice(range(9))
@@ -36,23 +36,24 @@ def main(model_cfg, log_wandb):
         config=config,
         num_samples=200,
         scheduler=scheduler,
-        storage_path="/bigtemp/jlc9wr/ray_results",
+        storage_path="/home/a/ddn_tuneparmeter_results",
         stop={"training_iteration": 400}
         # checkpoint_at_end=True
     )
 
 def tune_hyperparams(hyperparam_config, model_cfg, log_wandb):
-    # dataset_file = "/u/jlc9wr/deep-dynamics/deep_dynamics/data/LVMS_23_01_04_A_{}.npz".format(hyperparam_config["horizon"])
-    # dataset_file = "/u/jlc9wr/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZ_{}.npz".format(hyperparam_config["horizon"])
-    dataset_file = "/u/jlc9wr/deep-dynamics/deep_dynamics/data/Putnam_park2023_run4_2_{}.npz".format(hyperparam_config["horizon"])
+    # dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/LVMS_23_01_04_A_{}.npz".format(hyperparam_config["horizon"])
+    # dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZ_{}.npz".format(hyperparam_config["horizon"])
+    # dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/Putnam_park2023_run4_2_{}.npz".format(hyperparam_config["horizon"])
+    dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/2024-09-02-13-43-30-ddn_state0_{}.npz".format(hyperparam_config["horizon"])
     with open(model_cfg, 'rb') as f:
         param_dict = yaml.load(f, Loader=yaml.SafeLoader)
     experiment_name = "%dlayers_%dneurons_%dbatch_%flr_%dhorizon_%dgru" % (hyperparam_config["layers"], hyperparam_config["neurons"], hyperparam_config["batch_size"], hyperparam_config["lr"], hyperparam_config["horizon"], hyperparam_config["gru_layers"])
-    if not os.path.exists("/u/jlc9wr/deep-dynamics/deep_dynamics/output"):
-        os.mkdir("/u/jlc9wr/deep-dynamics/deep_dynamics/output")
-    if not os.path.exists("/u/jlc9wr/deep-dynamics/deep_dynamics/output/%s" % (os.path.basename(os.path.normpath(model_cfg)).split('.')[0])):
-        os.mkdir("/u/jlc9wr/deep-dynamics/deep_dynamics/output/%s" % (os.path.basename(os.path.normpath(model_cfg)).split('.')[0]))
-    output_dir = "/u/jlc9wr/deep-dynamics/deep_dynamics/output/%s/%s" % (os.path.basename(os.path.normpath(model_cfg)).split('.')[0], experiment_name)
+    if not os.path.exists("/home/a/deep-dynamics/deep_dynamics/output"):
+        os.mkdir("/home/a/deep-dynamics/deep_dynamics/output")
+    if not os.path.exists("/home/a/deep-dynamics/deep_dynamics/output/%s" % (os.path.basename(os.path.normpath(model_cfg)).split('.')[0])):
+        os.mkdir("/home/a/deep-dynamics/deep_dynamics/output/%s" % (os.path.basename(os.path.normpath(model_cfg)).split('.')[0]))
+    output_dir = "/home/a/deep-dynamics/deep_dynamics/output/%s/%s" % (os.path.basename(os.path.normpath(model_cfg)).split('.')[0], experiment_name)
     if not os.path.exists(output_dir):
             os.mkdir(output_dir)
     data_npy = np.load(dataset_file)

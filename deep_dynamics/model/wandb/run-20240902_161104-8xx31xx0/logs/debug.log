@@ -1,0 +1,30 @@
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Current SDK version is 0.17.6
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Configure stats pid to 111090
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Loading settings from /home/a/.config/wandb/settings
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Loading settings from /home/a/deep-dynamics/deep_dynamics/model/wandb/settings
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'deep_dynamics/model/train.py', 'program_abspath': '/home/a/deep-dynamics/deep_dynamics/model/train.py', 'program': '/home/a/deep-dynamics/deep_dynamics/model/train.py'}
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_setup.py:_flush():76] Applying login settings: {}
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_init.py:_log_setup():521] Logging user logs to /home/a/deep-dynamics/deep_dynamics/model/wandb/run-20240902_161104-8xx31xx0/logs/debug.log
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_init.py:_log_setup():522] Logging internal logs to /home/a/deep-dynamics/deep_dynamics/model/wandb/run-20240902_161104-8xx31xx0/logs/debug-internal.log
+2024-09-02 16:11:04,431 INFO    MainThread:111090 [wandb_init.py:init():559] calling init triggers
+2024-09-02 16:11:04,432 INFO    MainThread:111090 [wandb_init.py:init():566] wandb.init called with sweep_config: {}
+config: {'learning_rate': 0.0006, 'hidden_layers': 15, 'hidden_layer_size': 436, 'batch_size': 32, 'timestamps': 5, 'architecture': 'RNN', 'gru_layers': 7}
+2024-09-02 16:11:04,432 INFO    MainThread:111090 [wandb_init.py:init():609] starting backend
+2024-09-02 16:11:04,432 INFO    MainThread:111090 [wandb_init.py:init():613] setting up manager
+2024-09-02 16:11:04,432 INFO    MainThread:111090 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2024-09-02 16:11:04,432 INFO    MainThread:111090 [wandb_init.py:init():621] backend started and connected
+2024-09-02 16:11:04,433 INFO    MainThread:111090 [wandb_init.py:init():716] updated telemetry
+2024-09-02 16:11:04,436 INFO    MainThread:111090 [wandb_init.py:init():749] communicating run to backend with 90.0 second timeout
+2024-09-02 16:11:05,063 INFO    MainThread:111090 [wandb_run.py:_on_init():2438] communicating current version
+2024-09-02 16:11:05,113 INFO    MainThread:111090 [wandb_run.py:_on_init():2447] got version response upgrade_message: "wandb version 0.17.8 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2024-09-02 16:11:05,113 INFO    MainThread:111090 [wandb_init.py:init():800] starting run threads in backend
+2024-09-02 16:11:06,154 INFO    MainThread:111090 [wandb_run.py:_console_start():2416] atexit reg
+2024-09-02 16:11:06,154 INFO    MainThread:111090 [wandb_run.py:_redirect():2258] redirect: wrap_raw
+2024-09-02 16:11:06,154 INFO    MainThread:111090 [wandb_run.py:_redirect():2323] Wrapping output streams.
+2024-09-02 16:11:06,154 INFO    MainThread:111090 [wandb_run.py:_redirect():2348] Redirects installed.
+2024-09-02 16:11:06,155 INFO    MainThread:111090 [wandb_init.py:init():843] run started, returning control to user process
+2024-09-02 16:11:06,155 INFO    MainThread:111090 [wandb_watch.py:watch():51] Watching
+2024-09-02 16:11:14,601 WARNING MsgRouterThr:111090 [router.py:message_loop():77] message_loop has been closed

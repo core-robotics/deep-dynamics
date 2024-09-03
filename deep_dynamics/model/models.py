@@ -297,16 +297,25 @@ class DeepDynamicsModelF1T(ModelBase):
         state_action_dict = self.unpack_state_actions(x)
         steering = state_action_dict["STEERING_FB"] + state_action_dict["STEERING_CMD"]
         throttle = state_action_dict["THROTTLE_FB"] + state_action_dict["THROTTLE_CMD"]
+        # v= torch.sqrt(state_action_dict["VX"]**2 + state_action_dict["VY"]**2)
+        v_dot=throttle
         alphaf = steering - torch.atan2(self.vehicle_specs["lf"]*state_action_dict["YAW_RATE"] + state_action_dict["VY"], torch.abs(state_action_dict["VX"]))
         alphar = torch.atan2((self.vehicle_specs["lr"]*state_action_dict["YAW_RATE"] - state_action_dict["VY"]), torch.abs(state_action_dict["VX"])) 
         beta= torch.atan2(state_action_dict["VY"], state_action_dict["VX"])
-        Frx = self.vehicle_specs["mass"] *throttle*torch.cos(beta)+self.vehicle_specs["mass"]*state_action_dict["YAW_RATE"]*(state_action_dict["VX"]*torch.cos(beta)+state_action_dict["VY"]*torch.sin(beta))*torch.sin(beta)
+        # Frx = self.vehicle_specs["mass"] *throttle*torch.cos(beta)+self.vehicle_specs["mass"]*state_action_dict["YAW_RATE"]*(state_action_dict["VX"]*torch.cos(beta)+state_action_dict["VY"]*torch.sin(beta))*torch.sin(beta)
         Ffy = sys_param_dict["Df"] * torch.sin(sys_param_dict["Cf"] * torch.atan(sys_param_dict["Bf"] * alphaf))
         Fry = sys_param_dict["Dr"] * torch.sin(sys_param_dict["Cr"] * torch.atan(sys_param_dict["Br"] * alphar))
+        theta_double_dot=(self.vehicle_specs["lf"]*Ffy*torch.cos(steering)-self.vehicle_specs["lr"]*Fry)/sys_param_dict["Iz"]
+        # theta_double_dot=(sys_param_dict["lf"]*Ffy*torch.cos(steering)-sys_param_dict["lr"]*Fry)/sys_param_dict["Iz"]
+        # slip_angle_dot=((Ffy+Fry)/(self.vehicle_specs["mass"]*v))-state_action_dict["YAW_RATE"]
+        
         dxdt = torch.zeros(len(x), 3).to(device)
-        dxdt[:,0] = 1/self.vehicle_specs["mass"] * (Frx - Ffy*torch.sin(steering)) + state_action_dict["VY"]*state_action_dict["YAW_RATE"]
-        dxdt[:,1] = 1/self.vehicle_specs["mass"] * (Fry + Ffy*torch.cos(steering)) - state_action_dict["VX"]*state_action_dict["YAW_RATE"]
-        dxdt[:,2] = 1/sys_param_dict["Iz"] * (Ffy*self.vehicle_specs["lf"]*torch.cos(steering) - Fry*self.vehicle_specs["lr"])
+        # dxdt[:,0] = 1/self.vehicle_specs["mass"] * (Frx - Ffy*torch.sin(steering)) + state_action_dict["VY"]*state_action_dict["YAW_RATE"]
+        # dxdt[:,1] = 1/self.vehicle_specs["mass"] * (Fry + Ffy*torch.cos(steering)) - state_action_dict["VX"]*state_action_dict["YAW_RATE"]
+        # dxdt[:,2] = 1/sys_param_dict["Iz"] * (Ffy*self.vehicle_specs["lf"]*torch.cos(steering) - Fry*self.vehicle_specs["lr"])
+        dxdt[:, 0] = v_dot * torch.cos(beta) - state_action_dict["YAW_RATE"] * state_action_dict["VY"] 
+        dxdt[:, 1] = v_dot * torch.sin(beta) + state_action_dict["YAW_RATE"] * state_action_dict["VX"]
+        dxdt[:,2] = theta_double_dot
         dxdt *= Ts
         return x[:,-1,:3] + dxdt 
 
