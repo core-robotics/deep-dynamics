@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/deep_dynamics/model/train.py",
+            "console": "integratedTerminal",
+            "args": [
+                // "${workspaceFolder}/deep_dynamics/cfgs/model/deep_dynamics_F1T.yaml",
+                // "${workspaceFolder}/deep_dynamics/data/240905_15.npz",
+                "${workspaceFolder}/deep_dynamics/cfgs/model/deep_dynamics_iac.yaml",
+                "${workspaceFolder}/deep_dynamics/data/LVMS_23_01_04_A_15.npz",
+                "test_2"
+            ],
+            "python": "/home/a/anaconda3/envs/deep_dynamics/bin/python", 
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        }
+    ]
+}

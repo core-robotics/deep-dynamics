@@ -39,7 +39,7 @@ else:
     device = torch.device("cpu")
 
 param_file = "../cfgs/model/deep_dynamics_iac.yaml"
-state_dict = "../output/deep_dynamics_iac/2layers_188neurons_64batch_0.001914lr_15horizon_3gru/epoch_53.pth"
+state_dict = "../output/deep_dynamics_iac/test_1/epoch_112.pth"
 dataset_file = "../data/LVMS_23_01_04_A.csv"
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)

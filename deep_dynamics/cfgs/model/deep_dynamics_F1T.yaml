@@ -9,31 +9,31 @@ ACTIONS:
   - STEERING_CMD
 PARAMETERS:
   - Bf:
-    Min: 1.1
-    Max: 5.0
+    Min: 0.5
+    Max: 2.0
   - Cf:
-    Min: 1.1
+    Min: 0.5
     Max: 2.0
   - Df:
     Min: 10.0
-    Max: 100.0
+    Max: 50.0
   - Br:
-    Min: 1.1
-    Max: 5.0
+    Min: 0.5
+    Max: 2.0
   - Cr:
-    Min: 1.1
+    Min: 0.5
     Max: 2.0
   - Dr:
     Min: 10.0
-    Max: 100.0
+    Max: 50.0
   - Iz: 
     Min: 0.01
     Max: 0.1
   
 VEHICLE_SPECS:
-  lf: 0.158
-  lr: 0.171
-  mass: 3.47
+  lf: 0.17145
+  lr: 0.17145
+  mass: 3.5
 MODEL:
   NAME: DeepDynamicsF1T
   HORIZON: 15
