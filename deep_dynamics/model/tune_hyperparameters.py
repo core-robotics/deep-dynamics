@@ -18,9 +18,8 @@ def main(model_cfg, log_wandb):
         "neurons" : tune.randint(4, 256),
         "batch_size": tune.choice([16, 32, 64, 128, 256]),
         "lr" : tune.uniform(1e-4, 1e-2),
-        # "horizon": tune.choice(range(1,17)),
         "horizon": tune.choice([5,10,15]),
-        "gru_layers": tune.choice(range(3,9))
+        "gru_layers": tune.choice(range(1,9))
     }
 
     scheduler = ASHAScheduler(

@@ -6,29 +6,39 @@ import os
 
 
 vehicle_spec = {
-    "mass": 3.5,
-    "lf": 0.17145,
-    "lr": 0.17145
+    "mass": 1350,
+    "lf": 1.088,
+    "lr": 1.632
     }
     
+# sys_param0 = {
+#     "Bf": 6.1431937,
+#     "Cf": 1.838026,
+#     "Df": 4499.5947,
+#     "Br": 6.1431937,
+#     "Cr": 1.838026,
+#     "Dr": 4499.5947,
+#     "Iz": 3293.5715
+# }
+
 sys_param0 = {
-    "Bf": 1.5,
-    "Cf": 1.5,
-    "Df": 30.0,
-    "Br": 1.5,
-    "Cr": 1.5,
-    "Dr": 30.0,
-    "Iz": 0.04712
+    "Bf": 6.4546614,
+    "Cf": 1.748311,
+    "Df": 4607.2295,
+    "Br": 6.4546614,
+    "Cr": 1.748311,
+    "Dr": 4607.2295,
+    "Iz": 3336.1252
 }
 
 sys_param1 = {
-    "Bf": 2.4450,
-    "Cf": 1.1975,
-    "Df": 26.1542,
-    "Br": 2.8304,
-    "Cr": 1.1916,
-    "Dr": 26.6161,
-    "Iz": 0.06491
+    "Bf": 7.855789,
+    "Cf": 1.6713148,
+    "Df": 4356.745,
+    "Br": 7.855789,
+    "Cr": 1.6713148,
+    "Dr": 4356.745,
+    "Iz": 5431.5835
 }
 
 def differential_equation(vehicle_specs, sys_param_dict, dt, vx,vy,w, throttle, steering):
@@ -56,7 +66,7 @@ def differential_equation(vehicle_specs, sys_param_dict, dt, vx,vy,w, throttle, 
     return vx_next, vy_next, w_next
 
 def get_estimate_error(vx_gt, vy_gt, w_gt, throttle, steering, param):
-    vx_predict, vy_predict, w_predict = differential_equation(vehicle_spec, param, 0.025, vx_gt, vy_gt, w_gt, throttle, steering)
+    vx_predict, vy_predict, w_predict = differential_equation(vehicle_spec, param, 0.01, vx_gt, vy_gt, w_gt, throttle, steering)
     vx_error = vx_gt - vx_predict
     vy_error = vy_gt - vy_predict
     w_error = w_gt - w_predict
