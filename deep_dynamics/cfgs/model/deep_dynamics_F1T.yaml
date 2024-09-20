@@ -10,7 +10,7 @@ ACTIONS:
 PARAMETERS:
   - Bf:
     Min: 0.5
-    Max: 2.0
+    Max: 5.0
   - Cf:
     Min: 0.5
     Max: 2.0
@@ -19,7 +19,7 @@ PARAMETERS:
     Max: 50.0
   - Br:
     Min: 0.5
-    Max: 2.0
+    Max: 5.0
   - Cr:
     Min: 0.5
     Max: 2.0
@@ -27,8 +27,8 @@ PARAMETERS:
     Min: 10.0
     Max: 50.0
   - Iz: 
-    Min: 0.01
-    Max: 0.1
+    Min: 0.04
+    Max: 0.07
   
 VEHICLE_SPECS:
   lf: 0.17145
@@ -40,16 +40,16 @@ MODEL:
   LAYERS:
     - GRU:
       OUT_FEATURES: 225
-      LAYERS: 3
+      LAYERS: 5
     - DENSE:
-      OUT_FEATURES: 188
+      OUT_FEATURES: 72
       ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 188
+      OUT_FEATURES: 72
       ACTIVATION: Mish
   OPTIMIZATION:
     LOSS: MSE
-    BATCH_SIZE: 128
+    BATCH_SIZE: 256
     NUM_EPOCHS: 400
     OPTIMIZER: Adam
-    LR: 0.001
+    LR: 0.00575
