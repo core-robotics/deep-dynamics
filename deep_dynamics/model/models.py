@@ -301,14 +301,14 @@ class DeepDynamicsModelF1T(ModelBase):
         Fry =  sys_param_dict["Dr"] * torch.sin(sys_param_dict["Cr"] * torch.atan(sys_param_dict["Br"] * alphar ))
         slip_angle = torch.atan2(state_action_dict["VY"] , state_action_dict["VX"])
         # Fx=self.vehicle_specs["mass"]*throttle*torch.cos(slip_angle)
-        V=torch.sqrt(state_action_dict["VX"]**2 + state_action_dict["VY"]**2)
-        slip_angle_dot=(Ffy+Fry)/(self.vehicle_specs["mass"]*V)-state_action_dict["YAW_RATE"]
+        velocity=torch.sqrt(state_action_dict["VX"]**2 + state_action_dict["VY"]**2)
+        slip_angle_dot=(Ffy+Fry)/(self.vehicle_specs["mass"]*velocity)-state_action_dict["YAW_RATE"]
         
         dxdt = torch.zeros(len(x), 3).to(device)
         # dxdt[:,0] = 1/self.vehicle_specs["mass"] * (Fx - Ffy*torch.sin(steering)) + state_action_dict["VY"]*state_action_dict["YAW_RATE"]
         # dxdt[:,1] = 1/self.vehicle_specs["mass"] * (Fry + Ffy*torch.cos(steering)) - state_action_dict["VX"]*state_action_dict["YAW_RATE"]
-        dxdt[:,0] = throttle*torch.cos(slip_angle) - V*torch.sin(slip_angle)*slip_angle_dot
-        dxdt[:,1] = throttle*torch.sin(slip_angle) + V*torch.cos(slip_angle)*slip_angle_dot
+        dxdt[:,0] = throttle*torch.cos(slip_angle) - velocity*torch.sin(slip_angle)*slip_angle_dot
+        dxdt[:,1] = throttle*torch.sin(slip_angle) + velocity*torch.cos(slip_angle)*slip_angle_dot
         dxdt[:,2] = 1/sys_param_dict["Iz"] * (Ffy*self.vehicle_specs["lf"]*torch.cos(steering) - Fry*self.vehicle_specs["lr"])
         dxdt *= Ts
         return x[:,-1,:3] + dxdt
