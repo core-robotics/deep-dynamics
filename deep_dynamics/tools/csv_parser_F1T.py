@@ -24,22 +24,22 @@ def write_dataset(csv_path, horizon, save=True):
                     column_idxs[row[i].split("(")[0]] = i
                 continue
             
-            vx = float(row[column_idxs[".vx"]])
+            vx = float(row[column_idxs["vx"]])
             if abs(vx) < 0.3:
                 if started:
                     break
-                previous_throttle = float(row[column_idxs[".throttle"]])
-                previous_steer = float(row[column_idxs[".steer"]])
+                previous_throttle = float(row[column_idxs["accel"]])
+                previous_steer = float(row[column_idxs["steer"]])
                 continue
-            vy = float(row[column_idxs[".vy"]])
-            vtheta = float(row[column_idxs[".omega"]])
-            steering = float(row[column_idxs[".steer"]])
-            throttle = float(row[column_idxs[".throttle"]])
+            vy = float(row[column_idxs["vy"]])
+            vtheta = float(row[column_idxs["omega"]])
+            steering = float(row[column_idxs["steer"]])
+            throttle = float(row[column_idxs["accel"]])
             
             steering_cmd = steering - previous_steer
             throttle_cmd = throttle - previous_throttle
             odometry.append(np.array([vx, vy, vtheta, throttle, steering]))
-            poses.append([float(row[column_idxs[".x"]]), float(row[column_idxs[".y"]]), float(row[column_idxs[".phi"]]), vx, vy, vtheta, throttle, steering])
+            poses.append([float(row[column_idxs["px"]]), float(row[column_idxs["py"]]), float(row[column_idxs["yaw"]]), vx, vy, vtheta, throttle, steering])
             previous_throttle += throttle_cmd
             previous_steer += steering_cmd
             if started:
