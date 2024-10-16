@@ -1,0 +1,55 @@
+STATE:
+  - VX
+  - VY
+  - YAW_RATE
+  - THROTTLE_FB
+  - STEERING_FB
+ACTIONS:
+  - THROTTLE_CMD
+  - STEERING_CMD
+PARAMETERS:
+  - Bf:
+    Min: 0.5
+    Max: 5.0
+  - Cf:
+    Min: 0.5
+    Max: 2.0
+  - Df:
+    Min: 10.0
+    Max: 50.0
+  - Br:
+    Min: 0.5
+    Max: 5.0
+  - Cr:
+    Min: 0.5
+    Max: 2.0
+  - Dr:
+    Min: 10.0
+    Max: 50.0
+  - Iz: 
+    Min: 0.04
+    Max: 0.07
+  
+VEHICLE_SPECS:
+  lf: 0.17145
+  lr: 0.17145
+  mass: 3.5
+MODEL:
+  NAME: DeepDynamicsF1T
+  HORIZON: 15
+  LAYERS:
+    - GRU:
+      OUT_FEATURES: 225
+      LAYERS: 5
+    - DENSE:
+      OUT_FEATURES: 72
+      ACTIVATION: Mish
+    - DENSE:
+      OUT_FEATURES: 72
+      ACTIVATION: Mish
+  OPTIMIZATION:
+    LOSS: MSE
+    BATCH_SIZE: 256
+    NUM_EPOCHS: 400
+    OPTIMIZER: Adam
+    LR: 0.00575
