@@ -313,6 +313,46 @@ class DeepDynamicsModelF1T(ModelBase):
         dxdt *= Ts
         return x[:,-1,:3] + dxdt
         
+class SlipF1TModel(ModelBase):
+    def __init__(self, param_dict, eval=False):
+
+        class GuardLayer(nn.Module):
+            def __init__(self, param_dict):
+                super().__init__()
+                guard_output = create_module("DENSE", param_dict["MODEL"]["LAYERS"][-1]["OUT_FEATURES"], param_dict["MODEL"]["HORIZON"], len(param_dict["PARAMETERS"]), activation="Sigmoid")
+                self.guard_dense = guard_output[0]
+                self.guard_activation = guard_output[1]
+                self.coefficient_ranges = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
+                self.coefficient_mins = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
+                for i in range(len(param_dict["PARAMETERS"])):
+                    self.coefficient_ranges[i] = param_dict["PARAMETERS"][i]["Max"]- param_dict["PARAMETERS"][i]["Min"]
+                    self.coefficient_mins[i] = param_dict["PARAMETERS"][i]["Min"]
+            
+            def forward(self, x):
+                guard_output = self.guard_dense(x)
+                guard_output = self.guard_activation(guard_output) * self.coefficient_ranges + self.coefficient_mins
+                return guard_output
+        super().__init__(param_dict, [GuardLayer(param_dict)], eval)
+
+    def differential_equation(self, x, output, Ts=0.025):
+        sys_param_dict, _ = self.unpack_sys_params(output)
+        state_action_dict = self.unpack_state_actions(x)
+        steering = state_action_dict["STEERING_FB"] + state_action_dict["STEERING_CMD"]
+        accel = state_action_dict["THROTTLE_FB"] + state_action_dict["THROTTLE_CMD"]
+        vx=state_action_dict["V"]*torch.cos(state_action_dict["SLIP_ANGLE"])
+        vy=state_action_dict["V"]*torch.sin(state_action_dict["SLIP_ANGLE"])
+        alphaf = steering - torch.atan2(self.vehicle_specs["lf"]*state_action_dict["YAW_RATE"] + vy, torch.abs(vx))
+        alphar = torch.atan2((self.vehicle_specs["lr"]*state_action_dict["YAW_RATE"] - vy), torch.abs(vx))
+        Ffy =  sys_param_dict["Df"] * torch.sin(sys_param_dict["Cf"] * torch.atan(sys_param_dict["Bf"] * alphaf ))
+        Fry =  sys_param_dict["Dr"] * torch.sin(sys_param_dict["Cr"] * torch.atan(sys_param_dict["Br"] * alphar ))
+        
+        dxdt = torch.zeros(len(x), 3).to(device)
+        dxdt[:,0] = accel(1-state_action_dict["V"]*sys_param_dict["Cm0"])
+        dxdt[:,1] = (Ffy+Fry)/(self.vehicle_specs["mass"]*state_action_dict["V"])-state_action_dict["YAW_RATE"]
+        dxdt[:,2] = 1/sys_param_dict["Iz"] * (Ffy*self.vehicle_specs["lf"]*torch.cos(steering) - Fry*self.vehicle_specs["lr"])
+        dxdt *= Ts
+        return x[:,-1,:3] + dxdt    
+
 
 class DeepDynamicsModelCN7(ModelBase):
     def __init__(self, param_dict, eval=False):
@@ -361,6 +401,7 @@ string_to_model = {
     "DeepDynamicsIAC" : DeepDynamicsModelIAC,
     "DeepPacejkaIAC" : DeepPacejkaModelIAC,
     "DeepDynamicsF1T" : DeepDynamicsModelF1T,
+    "SlipF1T" : SlipF1TModel,
     "DeepDynamicsCN7" : DeepDynamicsModelCN7
 }
 
