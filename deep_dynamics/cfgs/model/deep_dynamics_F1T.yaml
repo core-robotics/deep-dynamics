@@ -31,8 +31,8 @@ PARAMETERS:
     Max: 0.07
   
 VEHICLE_SPECS:
-  lf: 0.17145
-  lr: 0.17145
+  lf: 0.175
+  lr: 0.15
   mass: 3.5
 MODEL:
   NAME: DeepDynamicsF1T

@@ -8,16 +8,19 @@
             "name": "Python Debugger: Current File with Arguments",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/deep_dynamics/model/train.py",
+            "program": "train.py",
             "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/deep_dynamics/model",
             "args": [
                 // "${workspaceFolder}/deep_dynamics/cfgs/model/deep_dynamics_F1T.yaml",
                 // "${workspaceFolder}/deep_dynamics/data/240905_15.npz",
-                "${workspaceFolder}/deep_dynamics/cfgs/model/deep_dynamics_iac.yaml",
-                "${workspaceFolder}/deep_dynamics/data/LVMS_23_01_04_A_15.npz",
-                "test_2"
+                // "${workspaceFolder}/deep_dynamics/cfgs/model/deep_dynamics_iac.yaml",
+                // "${workspaceFolder}/deep_dynamics/data/LVMS_23_01_04_A_15.npz",
+                "${workspaceFolder}/deep_dynamics/cfgs/model/slip_F1T.yaml",
+                "${workspaceFolder}/deep_dynamics/data/rosbag2_2024_10_17_sim_15.npz",
+                "sim_test_1"
             ],
-            "python": "/home/a/anaconda3/envs/deep_dynamics/bin/python", 
+            "python": "/home/a/.conda/envs/deep_dynamics/bin/python", 
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             }
