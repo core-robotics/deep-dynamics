@@ -38,7 +38,7 @@ VEHICLE_SPECS:
   lr: 0.15 
   mass: 3.5
 MODEL:
-  NAME: SlipF1TModel
+  NAME: SlipF1T
   HORIZON: 15
   LAYERS:
     - GRU:

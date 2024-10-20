@@ -26,6 +26,9 @@ PARAMETERS:
   - Dr:
     Min: 10.0
     Max: 50.0
+  - Cm0:
+    Min: 0.01
+    Max: 0.5
   - Iz: 
     Min: 0.04
     Max: 0.07

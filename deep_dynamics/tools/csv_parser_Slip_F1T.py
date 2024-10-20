@@ -5,7 +5,7 @@ import sys
 from tqdm import tqdm
 import csv
 
-SAMPLING_TIME = 0.025
+SAMPLING_TIME = 0.02
 
 
 def write_dataset(csv_path, horizon, save=True):

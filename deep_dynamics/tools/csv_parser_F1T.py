@@ -5,7 +5,8 @@ import sys
 from tqdm import tqdm
 import csv
 
-SAMPLING_TIME = 0.025
+SAMPLING_TIME = 0.02
+
 
 def write_dataset(csv_path, horizon, save=True):
     with open(csv_path) as f:
@@ -23,7 +24,7 @@ def write_dataset(csv_path, horizon, save=True):
                 for i in range(len(row)):
                     column_idxs[row[i].split("(")[0]] = i
                 continue
-            
+
             vx = float(row[column_idxs["vx"]])
             if abs(vx) < 0.3:
                 if started:
@@ -35,11 +36,22 @@ def write_dataset(csv_path, horizon, save=True):
             vtheta = float(row[column_idxs["omega"]])
             steering = float(row[column_idxs["steer"]])
             throttle = float(row[column_idxs["accel"]])
-            
+
             steering_cmd = steering - previous_steer
             throttle_cmd = throttle - previous_throttle
             odometry.append(np.array([vx, vy, vtheta, throttle, steering]))
-            poses.append([float(row[column_idxs["px"]]), float(row[column_idxs["py"]]), float(row[column_idxs["yaw"]]), vx, vy, vtheta, throttle, steering])
+            poses.append(
+                [
+                    float(row[column_idxs["px"]]),
+                    float(row[column_idxs["py"]]),
+                    float(row[column_idxs["yaw"]]),
+                    vx,
+                    vy,
+                    vtheta,
+                    throttle,
+                    steering,
+                ]
+            )
             previous_throttle += throttle_cmd
             previous_steer += steering_cmd
             if started:
@@ -49,31 +61,43 @@ def write_dataset(csv_path, horizon, save=True):
         odometry = np.array(odometry)
         throttle_cmds = np.array(throttle_cmds)
         steering_cmds = np.array(steering_cmds)
-        features = np.zeros((len(throttle_cmds) - horizon - 1,  horizon, 8), dtype=np.double)
+        features = np.zeros(
+            (len(throttle_cmds) - horizon - 1, horizon, 8), dtype=np.double
+        )
         labels = np.zeros((len(throttle_cmds) - horizon - 1, 3), dtype=np.double)
-        
-        for i in tqdm(range(len(throttle_cmds) - horizon - 1 - 5), desc="Compiling dataset"):
-            features[i] = np.array([*odometry[i:i+horizon].T, throttle_cmds[i:i+horizon], steering_cmds[i:i+horizon], odometry[i+5:i+horizon+5,0]]).T
-            labels[i] = np.array([*odometry[i+horizon]])[:3]
+
+        for i in tqdm(
+            range(len(throttle_cmds) - horizon - 1 - 5), desc="Compiling dataset"
+        ):
+            features[i] = np.array(
+                [
+                    *odometry[i : i + horizon].T,
+                    throttle_cmds[i : i + horizon],
+                    steering_cmds[i : i + horizon],
+                    odometry[i + 5 : i + horizon + 5, 0],
+                ]
+            ).T
+            labels[i] = np.array([*odometry[i + horizon]])[:3]
         poses = np.array(poses)
         print("Final features shape:", features.shape)
         print("Final labels shape:", labels.shape)
         if save:
-            np.savez(csv_path[:csv_path.find(".csv")] + "_" + str(horizon) + ".npz", features=features, labels=labels, poses=poses)
+            np.savez(
+                csv_path[: csv_path.find(".csv")] + "_" + str(horizon) + ".npz",
+                features=features,
+                labels=labels,
+                poses=poses,
+            )
         return features, labels, poses
-
-            
-            
-
-
 
 
 if __name__ == "__main__":
     import argparse, argcomplete
+
     parser = argparse.ArgumentParser(description="Convert CSV file to pickled dataset")
     parser.add_argument("csv_path", type=str, help="CSV file to convert")
     parser.add_argument("horizon", type=int, help="Horizon of timestamps used")
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    argdict : dict = vars(args)
+    argdict: dict = vars(args)
     write_dataset(argdict["csv_path"], argdict["horizon"])

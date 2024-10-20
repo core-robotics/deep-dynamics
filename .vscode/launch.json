@@ -18,7 +18,7 @@
                 // "${workspaceFolder}/deep_dynamics/data/LVMS_23_01_04_A_15.npz",
                 "${workspaceFolder}/deep_dynamics/cfgs/model/slip_F1T.yaml",
                 "${workspaceFolder}/deep_dynamics/data/rosbag2_2024_10_17_sim_15.npz",
-                "sim_test_1"
+                "Debug"
             ],
             "python": "/home/a/.conda/envs/deep_dynamics/bin/python", 
             "env": {
