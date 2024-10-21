@@ -27,11 +27,11 @@ PARAMETERS:
     Min: 10.0
     Max: 50.0
   - Cm0:
-    Min: 0.01
-    Max: 0.5
+    Min: 0.03
+    Max: 0.05
   - Iz: 
     Min: 0.03
-    Max: 0.06
+    Max: 0.2
 
 VEHICLE_SPECS:
   lf: 0.175 
@@ -47,21 +47,21 @@ MODEL:
     - DENSE:
       OUT_FEATURES: 226
       ACTIVATION: Mish
-    # - DENSE:
-    #   OUT_FEATURES: 226
-    #   ACTIVATION: Mish
-    # - DENSE:
-    #   OUT_FEATURES: 226
-    #   ACTIVATION: Mish
-    # - DENSE:
-    #   OUT_FEATURES: 226
-    #   ACTIVATION: Mish
-    # - DENSE:
-    #   OUT_FEATURES: 226
-    #   ACTIVATION: Mish
-    # - DENSE:
-    #   OUT_FEATURES: 226
-    #   ACTIVATION: Mish
+    - DENSE:
+      OUT_FEATURES: 226
+      ACTIVATION: Mish
+    - DENSE:
+      OUT_FEATURES: 226
+      ACTIVATION: Mish
+    - DENSE:
+      OUT_FEATURES: 226
+      ACTIVATION: Mish
+    - DENSE:
+      OUT_FEATURES: 226
+      ACTIVATION: Mish
+    - DENSE:
+      OUT_FEATURES: 226
+      ACTIVATION: Mish
   OPTIMIZATION:
     LOSS: MSE
     BATCH_SIZE: 64

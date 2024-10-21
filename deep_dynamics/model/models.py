@@ -755,13 +755,11 @@ class SlipF1TModel(ModelBase):
         
         dxdt = torch.zeros(len(x), 3).to(device)
         dxdt[:, 0] = accel * (1 - state_action_dict["V"] * sys_param_dict["Cm0"])
-        # dxdt[:,0]= (1/self.vehicle_specs["mass"])*(Fx - Ffy*torch.sin(steering)) + (vy*state_action_dict["YAW_RATE"])
-        # dxdt[:, 0] = (1 / self.vehicle_specs["mass"]) * (Fx - Ffy * torch.sin(steering)) + (vy * state_action_dict["YAW_RATE"])
-        dxdt[:, 1] = (Ffy + Fry) / (self.vehicle_specs["mass"] *(0.0001+ state_action_dict["V"])) - state_action_dict["YAW_RATE"]
-        # dxdt[:,1]= (1/self.vehicle_specs["mass"])*(Fry + Ffy*torch.cos(steering)) - (vx*state_action_dict["YAW_RATE"])
+        dxdt[:, 1] = (Ffy + Fry) / (self.vehicle_specs["mass"] *(state_action_dict["V"]+1e-8)) - state_action_dict["YAW_RATE"]
         dxdt[:, 2] = (1 / sys_param_dict["Iz"]) * (Ffy * self.vehicle_specs["lf"] * torch.cos(steering)- Fry * self.vehicle_specs["lr"])
         dxdt *= Ts
         # print("predicted:",x[:, 1, :3] + dxdt)
+        # print("v_dot:",dxdt[:, 0])
         return x[:, -1, :3] + dxdt
 
 

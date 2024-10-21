@@ -33,7 +33,8 @@ def write_dataset(csv_path, horizon, save=True):
                 continue
 
             # vx = float(row[column_idxs["vx"]])
-            v = abs(float(row[column_idxs["v"]]))
+            v = float(row[column_idxs["v"]])
+            v = float(max(v, 0.01))
 
             if abs(v) < 0.3:
                 if started:
