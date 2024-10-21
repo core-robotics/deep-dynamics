@@ -7,6 +7,13 @@ import csv
 
 SAMPLING_TIME = 0.02
 
+def save_float(value, row_idx, col_name):
+    try:
+        return float(value)
+    except ValueError:
+        print(f"NaN detected at row {row_idx} in column '{col_name}'. Replacing with 0.")
+        return 0.0
+
 
 def write_dataset(csv_path, horizon, save=True):
     with open(csv_path) as f:
@@ -26,7 +33,7 @@ def write_dataset(csv_path, horizon, save=True):
                 continue
 
             # vx = float(row[column_idxs["vx"]])
-            v = float(row[column_idxs["v"]])
+            v = abs(float(row[column_idxs["v"]]))
 
             if abs(v) < 0.3:
                 if started:

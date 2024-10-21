@@ -43,29 +43,29 @@ MODEL:
   LAYERS:
     - GRU:
       OUT_FEATURES: 225
-      LAYERS: 3
+      LAYERS: 1
     - DENSE:
       OUT_FEATURES: 226
       ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
+    # - DENSE:
+    #   OUT_FEATURES: 226
+    #   ACTIVATION: Mish
+    # - DENSE:
+    #   OUT_FEATURES: 226
+    #   ACTIVATION: Mish
+    # - DENSE:
+    #   OUT_FEATURES: 226
+    #   ACTIVATION: Mish
+    # - DENSE:
+    #   OUT_FEATURES: 226
+    #   ACTIVATION: Mish
+    # - DENSE:
+    #   OUT_FEATURES: 226
+    #   ACTIVATION: Mish
   OPTIMIZATION:
     LOSS: MSE
-    BATCH_SIZE: 128
+    BATCH_SIZE: 64
     NUM_EPOCHS: 300
     OPTIMIZER: Adam
-    LR: 0.001124514638266798
+    LR: 0.0001
 

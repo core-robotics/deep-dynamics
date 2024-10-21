@@ -26,7 +26,7 @@ def write_dataset(csv_path, horizon, save=True):
                 continue
 
             vx = float(row[column_idxs["vx"]])
-            if abs(vx) < 0.3:
+            if abs(vx) < 0.05:
                 if started:
                     break
                 previous_throttle = float(row[column_idxs["accel"]])

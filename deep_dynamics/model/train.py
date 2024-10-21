@@ -99,6 +99,7 @@ def train(
             val_loss = model.weighted_mse_loss(out, lab, weights).mean()
             val_loss_accum += val_loss.item()
             val_steps += 1
+            
         mean_train_loss = train_loss_accum / train_steps
         mean_val_loss = val_loss_accum / val_steps
         if log_wandb:

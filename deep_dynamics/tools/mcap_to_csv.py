@@ -4,8 +4,8 @@ from mcap.reader import make_reader
 from tqdm import tqdm
 
 # file path
-bagfile_path = "/home/a/bag/241020_ddn.mcap"
-output_csv_path = "/home/a/deep-dynamics/deep_dynamics/csv/241020_ddn.csv"
+bagfile_path = "/home/a/bag/241021_ddn.mcap"
+output_csv_path = "/home/a/deep-dynamics/deep_dynamics/csv/241021_ddn.csv"
 
 # message format and fieldnames
 MESSAGE_FORMAT = "16d"  # float64 , 15 data fields
@@ -30,7 +30,7 @@ fieldnames = [
 ]
 
 # Define the topic name to filter
-target_topic = "/filtered_state"  # Modify this to the desired topic name
+target_topic = "/my_state"  # Modify this to the desired topic name
 
 # MCAP file read and write to CSV
 with open(bagfile_path, "rb") as f, open(output_csv_path, "w", newline="") as csvfile:
