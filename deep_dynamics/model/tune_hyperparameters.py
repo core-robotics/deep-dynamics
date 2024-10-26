@@ -16,11 +16,11 @@ def main(model_cfg, log_wandb):
 
     config = {
         "layers": tune.choice(range(1, 9)),
-        "neurons": tune.randint(4, 256),
-        "batch_size": tune.choice([16, 32, 64, 128, 256]),
+        "neurons": tune.randint(32, 256),
+        "batch_size": tune.choice([32, 64, 128, 256]),
         "lr": tune.uniform(1e-4, 1e-2),
-        "horizon": tune.choice([5, 10, 15]),
-        "gru_layers": tune.choice(range(1, 9)),
+        "horizon": tune.choice([10, 15, 20]),
+        "gru_layers": tune.choice(range(1, 5)),
     }
 
     scheduler = ASHAScheduler(
@@ -47,7 +47,7 @@ def tune_hyperparams(hyperparam_config, model_cfg, log_wandb):
     # dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/LVMS_23_01_04_A_{}.npz".format(hyperparam_config["horizon"])
     # dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZ_{}.npz".format(hyperparam_config["horizon"])
     # dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/Putnam_park2023_run4_2_{}.npz".format(hyperparam_config["horizon"])
-    dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/240905_{}.npz".format(
+    dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/241021_ddn_{}.npz".format(
         hyperparam_config["horizon"]
     )
     # dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/2024-09-02-13-43-30-ddn_state0_{}.npz".format(hyperparam_config["horizon"])

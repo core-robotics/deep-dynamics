@@ -9,28 +9,28 @@ ACTIONS:
   - STEERING_CMD
 PARAMETERS: 
   - Bf:
-    Min: 1.0
-    Max: 5.0
+    Min: 0.9
+    Max: 3.5
   - Cf:
     Min: 1.0
-    Max: 2.0
+    Max: 3.5
   - Df:
     Min: 10.0
     Max: 50.0
   - Br:
-    Min: 1.0
-    Max: 5.0
+    Min: 0.9
+    Max: 3.5
   - Cr:
     Min: 1.0
-    Max: 2.0
+    Max: 3.5
   - Dr:
     Min: 10.0
     Max: 50.0
   - Cm0:
     Min: 0.03
-    Max: 0.05
+    Max: 0.08
   - Iz: 
-    Min: 0.03
+    Min: 0.01
     Max: 0.2
 
 VEHICLE_SPECS:
@@ -39,33 +39,22 @@ VEHICLE_SPECS:
   mass: 3.5
 MODEL:
   NAME: SlipF1T
-  HORIZON: 15
+  HORIZON: 20
   LAYERS:
     - GRU:
-      OUT_FEATURES: 225
-      LAYERS: 1
+      OUT_FEATURES: 400
+      LAYERS: 2
     - DENSE:
-      OUT_FEATURES: 226
+      OUT_FEATURES: 74
       ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 226
+      OUT_FEATURES: 74
       ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
-    - DENSE:
-      OUT_FEATURES: 226
-      ACTIVATION: Mish
+
   OPTIMIZATION:
-    LOSS: MSE
+    LOSS: MAE
     BATCH_SIZE: 64
     NUM_EPOCHS: 300
     OPTIMIZER: Adam
-    LR: 0.0001
+    LR: 0.002
 
