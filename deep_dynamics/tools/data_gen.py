@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Simulation settings
-time_duration = 20 * 60  # 20 minutes in seconds
+time_duration = 2 * 60  # 20 minutes in seconds
 time_step = 0.02          # Simulation time step in seconds
 time = np.arange(0, time_duration, time_step)
 
@@ -73,7 +73,7 @@ df = pd.DataFrame({
     'py': state[:, 1],
     'yaw': state[:, 2],
     'v': state[:, 3],
-    'beta': state[:, 4],
+    'slip_angle': state[:, 4],
     'omega': state[:, 5],
     'accel': accel,
     'steer': steer
@@ -111,7 +111,7 @@ plt.legend()
 
 # Plot beta (sideslip angle)
 plt.subplot(2, 3, 4)
-plt.plot(df['time'], df['beta'], label="Sideslip Angle (Beta)")
+plt.plot(df['time'], df['slip_angle'], label="Sideslip Angle (Beta)")
 plt.xlabel('Time (s)')
 plt.ylabel('Beta (rad)')
 plt.title('Sideslip Angle Over Time')

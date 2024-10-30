@@ -30,8 +30,8 @@ PARAMETERS:
     Min: 0.03
     Max: 0.08
   - Iz: 
-    Min: 0.01
-    Max: 0.2
+    Min: 0.09
+    Max: 0.11
 
 VEHICLE_SPECS:
   lf: 0.175 
