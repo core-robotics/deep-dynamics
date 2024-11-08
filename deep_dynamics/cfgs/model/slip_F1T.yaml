@@ -10,28 +10,28 @@ ACTIONS:
 PARAMETERS: 
   - Bf:
     Min: 0.9
-    Max: 3.5
+    Max: 2.0
   - Cf:
-    Min: 1.0
-    Max: 3.5
+    Min: 1.499
+    Max: 1.5
   - Df:
-    Min: 10.0
-    Max: 50.0
+    Min: 20.0
+    Max: 60.0
   - Br:
     Min: 0.9
-    Max: 3.5
+    Max: 2.0
   - Cr:
-    Min: 1.0
-    Max: 3.5
+    Min: 1.499
+    Max: 1.5
   - Dr:
-    Min: 10.0
-    Max: 50.0
+    Min: 20.0
+    Max: 60.0
   - Cm0:
-    Min: 0.03
-    Max: 0.08
+    Min: 0.0399
+    Max: 0.0400
   - Iz: 
     Min: 0.09
-    Max: 0.11
+    Max: 0.3
 
 VEHICLE_SPECS:
   lf: 0.175 
