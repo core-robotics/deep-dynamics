@@ -38,9 +38,14 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
-param_file = "../cfgs/model/deep_dynamics.yaml"
-state_dict = "../output/deep_dynamics/16layers_436neurons_2batch_0.000144lr_5horizon_7gru/epoch_385.pth"
-dataset_file = "../data/DYN-PP-ETHZMobil.npz"
+# param_file = "../cfgs/model/deep_dynamics.yaml"
+# state_dict = "../output/deep_dynamics/16layers_436neurons_2batch_0.000144lr_5horizon_7gru/epoch_385.pth"
+# dataset_file = "../data/DYN-PP-ETHZMobil.npz"
+
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics.yaml"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_dynamics/mo1/epoch_382.pth"
+dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil.npz"
+
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	ddm_scaler = pickle.load(f)
 
@@ -85,8 +90,10 @@ for inputs, labels, norm_inputs in tqdm(ddm_data_loader, total=len(ddm_predictio
 
 	
 # DPM GT
-param_file = "../cfgs/model/deep_pacejka.yaml"
-state_dict = "../output/deep_pacejka/2layers_108neurons_16batch_0.002812lr_10horizon_8gru/epoch_385.pth"
+# param_file = "../cfgs/model/deep_pacejka.yaml"
+# state_dict = "../output/deep_pacejka/2layers_108neurons_16batch_0.002812lr_10horizon_8gru/epoch_385.pth"
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_pacejka.yaml"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_pacejka/mo1/epoch_318.pth"
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	dpm_scaler = pickle.load(f)
 with open(param_file, 'rb') as f:
@@ -121,7 +128,7 @@ for inputs, labels, norm_inputs in tqdm(dpm_data_loader, total=len(dpm_predictio
 # plots
 
 # Velocities
-font = {'family' : 'normal',
+font = {'family' : 'DejaVu Sans',
         'weight' : 'normal',
         'size'   : 22}
 

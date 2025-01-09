@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import matplotlib
 
-# font = {'family' : 'normal',
+# font = {'family' : 'DejaVu Sans',
 #         'weight' : 'normal',
 #         'size'   : 22}
 # matplotlib.rc('font', **font)
@@ -39,14 +39,14 @@ Er_ddm = -0.070
 # Er_ddm = -0.733
 
 # DPM Coeffs
-# Bf_dpm = -4.010
-# Cf_dpm = -0.616
-# Df_dpm = 0.499
-# Ef_dpm = 1.554
-# Br_dpm = -1.897
-# Cr_dpm = -0.790
-# Dr_dpm = 0.763
-# Er_dpm = 8.542
+Bf_dpm = -4.010
+Cf_dpm = -0.616
+Df_dpm = 0.499
+Ef_dpm = 1.554
+Br_dpm = -1.897
+Cr_dpm = -0.790
+Dr_dpm = 0.763
+Er_dpm = 8.542
 
 # Bf_dpm = 5.763
 # Cf_dpm = -28.338
@@ -57,15 +57,15 @@ Er_ddm = -0.070
 # Dr_dpm = 863.780
 # Er_dpm = 12.189
 
-# Experimental
-Bf_dpm = 10.988
-Cf_dpm = 1.290
-Df_dpm = 11651.23
-Ef_dpm = -5.858
-Br_dpm = 0.095
-Cr_dpm = 9.587
-Dr_dpm = 863.780
-Er_dpm = 12.189
+# # Experimental
+# Bf_dpm = 10.988
+# Cf_dpm = 1.290
+# Df_dpm = 11651.23
+# Ef_dpm = -5.858
+# Br_dpm = 0.095
+# Cr_dpm = 9.587
+# Dr_dpm = 863.780
+# Er_dpm = 12.189
 
 
 alpha = np.linspace(-0.5, 0.5, 1000)
@@ -100,10 +100,15 @@ alpha = np.linspace(-0.5, 0.5, 1000)
 # plt.plot(alpha, Df *Cf *Bf * alpha, label="Linear Model")
 
 plt.figure(figsize=(12,8))
+Ffy_gt = Df_gt * np.sin(Cf_gt * np.arctan(Bf_gt * alpha - Ef_gt * (Bf_gt * alpha - np.arctan(Bf_gt * alpha))))
 Ffy_dpm = Df_dpm * np.sin(Cf_dpm * np.arctan(Bf_dpm * alpha - Ef_dpm * (Bf_dpm * alpha - np.arctan(Bf_dpm * alpha))))
-plt.plot(alpha, Ffy_dpm)
+Ffy_ddm= Df_ddm * np.sin(Cf_ddm * np.arctan(Bf_ddm * alpha - Ef_ddm * (Bf_ddm * alpha - np.arctan(Bf_ddm * alpha))))
+plt.plot(alpha, Ffy_gt, label="Ground Truth")
+plt.plot(alpha, Ffy_dpm, label="Deep Pacejka")
+plt.plot(alpha, Ffy_ddm, label="Deep Dynamics")
 plt.xlabel("Side Slip Angle (rad)")
 plt.ylabel("Front Lateral Force (N)")
 plt.grid()
 plt.title("B = {0}, C={1}, D={2}, E={3}".format(Bf_dpm, Cf_dpm, Df_dpm, Ef_dpm))
+plt.legend()
 plt.show()

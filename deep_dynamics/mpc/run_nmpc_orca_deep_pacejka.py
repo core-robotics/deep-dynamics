@@ -28,7 +28,7 @@ import pickle
 # CHANGE THIS
 
 SAVE_RESULTS = True
-TRACK_CONS = False
+TRACK_CONS = True
 
 #####################################################################
 # default settings
@@ -62,10 +62,13 @@ model = Dynamic(**params)
 #####################################################################
 # deep dynamics parameters
 
-param_file = "../cfgs/model/deep_pacejka.yaml"
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_pacejka.yaml"
 # state_dict = "../output/deep_pacejka/2layers_108neurons_16batch_0.002812lr_10horizon_8gru/epoch_385.pth"
-state_dict = "../output/deep_pacejka/minus20/epoch_364.pth"
-params["Iz"] *= 0.8
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_pacejka/mo1/epoch_318.pth"
+
+# params["Iz"] *= 0.8
+# params["Iz"] *= 1.2
+
 # state_dict = "../output/deep_pacejka/plus20/epoch_344.pth"
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)
@@ -81,7 +84,7 @@ with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 
 TRACK_NAME = 'ETHZMobil'
 track = ETHZMobil(reference='optimal', longer=True)
-SIM_TIME = 7.0
+SIM_TIME = 8.0
 
 #####################################################################
 # extract data
@@ -219,8 +222,10 @@ for idt in range(n_steps-horizon):
 		LnR.set_xdata(xref[0,1:])
 		LnR.set_ydata(xref[1,1:])
 
-		LnP.set_xdata(states[0,idt])
-		LnP.set_ydata(states[1,idt])
+		# LnP.set_xdata(states[0,idt])
+		# LnP.set_ydata(states[1,idt])
+		LnP.set_xdata([states[0,idt]])
+		LnP.set_ydata([states[1,idt]])
 
 		LnH.set_xdata(hstates[0])
 		LnH.set_ydata(hstates[1])
@@ -240,7 +245,7 @@ for idt in range(n_steps-horizon):
 		ddm_states[:,idt+1] = x_next[3:,-1]
 		ddm_forces[:,idt+1] = np.array([Ffy[idt+1], Frx[idt+1], Fry[idt+1]])
 
-	if states[0,idt] > 1.2 and idt > 200:
+	if states[0,idt] > 1.0 and idt > 300:
 		print("Lap Time:", Ts * idt)
 		break
 	plt.pause(Ts/100)
@@ -252,7 +257,7 @@ plt.ioff()
 
 if SAVE_RESULTS:
 	np.savez(
-		'../data/DYN-NMPC-{}{}-{}.npz'.format(SUFFIX, TRACK_NAME, "DEEP-PACEJKA-MINUS-20"),
+		'/home/a/deep-dynamics/deep_dynamics/data/DYN-NMPC-{}{}-{}.npz'.format(SUFFIX, TRACK_NAME, "DEEP-PACEJKA-PLUS-20"),
 		time=time,
 		states=states,
 		dstates=dstates,

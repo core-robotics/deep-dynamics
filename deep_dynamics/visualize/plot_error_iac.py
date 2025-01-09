@@ -39,7 +39,8 @@ else:
     device = torch.device("cpu")
 
 param_file = "../cfgs/model/deep_dynamics_iac.yaml"
-state_dict = "../output/deep_dynamics_iac/test_1/epoch_112.pth"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_dynamics_iac/test1/epoch_80.pth"
+# state_dict = "../output/deep_dynamics_iac/2layers_188neurons_64batch_0.001914lr_15horizon_3gru/epoch_53.pth"
 dataset_file = "../data/LVMS_23_01_04_A.csv"
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)
@@ -77,13 +78,15 @@ for inputs, labels, norm_inputs in tqdm(ddm_data_loader, total=len(ddm_predictio
 	ddm_state = ddm_state.cpu().detach().numpy()[0]
 	idx = 0
 	ddm_predictions[idt+ddm.horizon,:] = ddm_state
-	states[idt+ddm.horizon,:] = labels.cpu()
+	states[idt+ddm.horizon,:] = labels.cpu().numpy()
 	idt += 1
 
 	
 # DPM GT
 param_file = "../cfgs/model/deep_pacejka_iac.yaml"
-state_dict = "../output/deep_pacejka_iac/plus20/epoch_391.pth"
+# state_dict = "../output/deep_pacejka_iac/plus20/epoch_391.pth"
+# param_file = "../cfgs/model/deep_dynamics_iac.yaml"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_pacejka_iac/dpm1/epoch_392.pth"
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	dpm_scaler = pickle.load(f)
 with open(param_file, 'rb') as f:
@@ -116,17 +119,23 @@ for inputs, labels, norm_inputs in tqdm(dpm_data_loader, total=len(dpm_predictio
 # plots
 
 # Velocities
-font = {'family' : 'normal',
+font = {'family' : 'DejaVu Sans',
         'weight' : 'normal',
         'size'   : 22}
 
 matplotlib.rc('font', **font)
 fig, ax = plt.subplots(2, 3, figsize=(18,10))
+
 time = np.array(range(max(len(ddm_predictions), len(dpm_predictions)))) * Ts
+# time = np.array(range(len(ddm_predictions))) * Ts
+
 start_idx = max(ddm.horizon, dpm.horizon)
+# start_idx = ddm.horizon
+
 time = time[start_idx:-20]
 ddm_predictions = ddm_predictions[start_idx:-20,:]
 dpm_predictions = dpm_predictions[start_idx:-20,:]
+
 states = states[start_idx:-20,:]
 ax[0,0].plot(time, states[:,0], 'b', label='Ground Truth')
 ax[0,0].plot(time, ddm_predictions[:,0], '--g', label='Deep Dynamics')

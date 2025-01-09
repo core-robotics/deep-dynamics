@@ -24,26 +24,33 @@ track = ETHZMobil(reference='optimal', longer=True)
 #####################################################################
 # load inputs used to simulate Dynamic model
 
-data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-DYNAMICS.npz'.format(TRACK_NAME))
+# data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-DYNAMICS.npz'.format(TRACK_NAME))
+data = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-NMPC-ETHZMobil-DEEP-DYNAMICS.npz'.format(TRACK_NAME))
+
 time_dyn = data['time'][:N_SAMPLES+1]
 states_dyn = data['states'][:,:N_SAMPLES+1]
 inputs_dyn = data['inputs'][:,:N_SAMPLES]
 
 ddm_states = data['ddm_states'][:,:N_SAMPLES+1]
 
-data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-PACEJKA.npz'.format(TRACK_NAME))
+# data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-PACEJKA.npz'.format(TRACK_NAME))
+data = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-NMPC-ETHZMobil-DEEP-PACEJKA.npz'.format(TRACK_NAME))
+
 time_gp = data['time'][:N_SAMPLES+1]
 states_gp = data['states'][:,:N_SAMPLES+1]
 inputs_gp = data['inputs'][:,:N_SAMPLES]
 dpm_states = data['ddm_states'][:,:N_SAMPLES+1]
 
-data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-PACEJKA-PLUS-20.npz'.format(TRACK_NAME))
+# data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-PACEJKA-PLUS-20.npz'.format(TRACK_NAME))
+data = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-NMPC-ETHZMobil-DEEP-PACEJKA-PLUS-20.npz'.format(TRACK_NAME))
 time_plus = data['time'][:N_SAMPLES+1]
 states_plus = data['states'][:,:N_SAMPLES+1]
 inputs_plus = data['inputs'][:,:N_SAMPLES]
 dpm_plus_states = data['ddm_states'][:,:N_SAMPLES+1]
 
-data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-PACEJKA-MINUS-20.npz'.format(TRACK_NAME))
+# data = np.load('../data/DYN-NMPC-NOCONS-ETHZMobil-DEEP-PACEJKA-MINUS-20.npz'.format(TRACK_NAME))
+data = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-NMPC-ETHZMobil-DEEP-PACEJKA-MINUS-20.npz'.format(TRACK_NAME))
+
 time_minus = data['time'][:N_SAMPLES+1]
 states_minus = data['states'][:,:N_SAMPLES+1]
 inputs_minus = data['inputs'][:,:N_SAMPLES]
@@ -124,23 +131,23 @@ plt.show()
 
 
 
-#if not os.path.exists("mpc_images/"):
-#	os.mkdir("mpc_images/")
-#for INDEX in range(N_SAMPLES):
-#	plt.figure(figsize=(12,8))
-#	plt.axis('equal')
-#	plt.plot(track.x_outer, track.y_outer, 'k', lw=0.5, alpha=0.5)
-#	plt.plot(track.x_inner, track.y_inner, 'k', lw=0.5, alpha=0.5)
-#	plt.plot(states_dyn[0, :INDEX+1], states_dyn[1, :INDEX+1], 'g', lw=1, label='DDM (ours)')
-#	plt.plot(states_gp[0, :INDEX+1], states_gp[1, :INDEX+1], 'r', lw=1, label='DPM (GT)')
-#	plt.plot(states_plus[0, :INDEX+1], states_plus[1, :INDEX+1], 'b', lw=1, label='DPM (+20)')
-#	plt.plot(states_minus[0, :INDEX+1], states_minus[1, :INDEX+1], 'm', lw=1, label='DPM (-20)')
-#	plt.plot(states_dyn[0, INDEX], states_dyn[1, INDEX], 'g', marker='o')
-#	plt.plot(states_gp[0, INDEX], states_gp[1, INDEX], 'r', marker='o')
-#	plt.plot(states_plus[0, INDEX], states_plus[1, INDEX], 'b', marker='o')
-#	plt.plot(states_minus[0, INDEX], states_minus[1, INDEX], 'm', marker='o')
-#	plt.xlabel('$x$ [m]')
-	#plt.ylabel('$y$ [m]')
-#	plt.legend(loc='upper center', ncol=4, bbox_to_anchor=(0.5,1.1), frameon=False)
-#	plt.savefig('mpc_images/{:0>4}.png'.format(INDEX))
-#	plt.close()
+if not os.path.exists("mpc_images/"):
+	os.mkdir("mpc_images/")
+for INDEX in range(N_SAMPLES):
+	plt.figure(figsize=(12,8))
+	plt.axis('equal')
+	plt.plot(track.x_outer, track.y_outer, 'k', lw=0.5, alpha=0.5)
+	plt.plot(track.x_inner, track.y_inner, 'k', lw=0.5, alpha=0.5)
+	plt.plot(states_dyn[0, :INDEX+1], states_dyn[1, :INDEX+1], 'g', lw=1, label='DDM (ours)')
+	plt.plot(states_gp[0, :INDEX+1], states_gp[1, :INDEX+1], 'r', lw=1, label='DPM (GT)')
+	plt.plot(states_plus[0, :INDEX+1], states_plus[1, :INDEX+1], 'b', lw=1, label='DPM (+20)')
+	plt.plot(states_minus[0, :INDEX+1], states_minus[1, :INDEX+1], 'm', lw=1, label='DPM (-20)')
+	plt.plot(states_dyn[0, INDEX], states_dyn[1, INDEX], 'g', marker='o')
+	plt.plot(states_gp[0, INDEX], states_gp[1, INDEX], 'r', marker='o')
+	plt.plot(states_plus[0, INDEX], states_plus[1, INDEX], 'b', marker='o')
+	plt.plot(states_minus[0, INDEX], states_minus[1, INDEX], 'm', marker='o')
+	plt.xlabel('$x$ [m]')
+	plt.ylabel('$y$ [m]')
+	plt.legend(loc='upper center', ncol=4, bbox_to_anchor=(0.5,1.1), frameon=False)
+	plt.savefig('mpc_images/{:0>4}.png'.format(INDEX))
+	plt.close()

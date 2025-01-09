@@ -28,7 +28,7 @@ import os
 # CHANGE THIS
 
 SAVE_RESULTS = True
-TRACK_CONS = False
+TRACK_CONS = True
 
 #####################################################################
 # default settings
@@ -55,13 +55,19 @@ model = Dynamic(**params)
 #####################################################################
 # deep dynamics parameters
 
-param_file = "../cfgs/model/deep_dynamics.yaml"
-state_dict = "../output/deep_dynamics/16layers_436neurons_2batch_0.000144lr_5horizon_7gru/epoch_385.pth"
+# param_file = "../cfgs/model/deep_dynamics.yaml"
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics.yaml"
+
+
+# state_dict = "../output/deep_dynamics/16layers_436neurons_2batch_0.000144lr_5horizon_7gru/epoch_385.pth"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_dynamics/mo1/epoch_382.pth"
+
+
 with open(param_file, 'rb') as f:
 	param_dict = yaml.load(f, Loader=yaml.SafeLoader)
 ddm = string_to_model[param_dict["MODEL"]["NAME"]](param_dict, eval=True)
 ddm.cuda()
-ddm.load_state_dict(torch.load(state_dict))
+ddm.load_state_dict(torch.load(state_dict,weights_only=True))
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	ddm_scaler = pickle.load(f)
 
@@ -71,7 +77,10 @@ with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 
 TRACK_NAME = 'ETHZMobil'
 track = ETHZMobil(reference='optimal', longer=True)
-SIM_TIME = 6.5
+# track=ETHZMobil(reference='center', longer=True)
+# SIM_TIME = 6.5
+SIM_TIME = 8.0
+# SIM_TIME = 15
 
 #####################################################################
 # extract data
@@ -150,6 +159,7 @@ for idt in range(n_steps-horizon):
 # planner based on BayesOpt
 	xref, projidx = ConstantSpeed(x0=x0[:2], v0=x0[3], track=track, N=horizon, Ts=Ts, projidx=projidx)
 	if idt > 15:
+     
 		ddm_data = np.vstack((dstates[3:, idt-ddm.horizon:idt], inputs[:,idt-ddm.horizon+1:idt+1])).T
 		ddm_data_norm = torch.from_numpy(np.expand_dims(ddm_scaler.transform(ddm_data), axis=0)).float().cuda()
 		ddm_data = torch.from_numpy(np.expand_dims(ddm_data, axis=0)).float().cuda()
@@ -180,6 +190,8 @@ for idt in range(n_steps-horizon):
 	print("iter: {}, time: {:.2f}".format(idt, end-start))
 
 	# update current position with numerical integration (exact model)
+ 
+ 
 	x_next, data_x = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts], data_x)
 	states[:,idt+1] = x_next[:,-1]
 	dstates[:,idt+1] = data_x
@@ -190,7 +202,11 @@ for idt in range(n_steps-horizon):
 		hstates[:,0] = x0
 		hstates2[:,0] = x0
 		for idh in range(horizon):
+      
+      
 			x_next, data_x = dpm_model.sim_continuous(hstates[:,idh], umpc[:,idh].reshape(-1,1), [0, Ts], data_x)
+   
+   
 			hstates[:,idh+1] = x_next[:,-1]
 			hstates2[:,idh+1] = xmpc[:,idh+1]
 
@@ -201,9 +217,11 @@ for idt in range(n_steps-horizon):
 		LnR.set_xdata(xref[0,1:])
 		LnR.set_ydata(xref[1,1:])
 
-		LnP.set_xdata(states[0,idt])
-		LnP.set_ydata(states[1,idt])
-
+		# LnP.set_xdata(states[0,idt])
+		# LnP.set_ydata(states[1,idt])
+		LnP.set_xdata([states[0, idt]])
+		LnP.set_ydata([states[1, idt]])
+  
 		LnH.set_xdata(hstates[0])
 		LnH.set_ydata(hstates[1])
 
@@ -221,7 +239,7 @@ for idt in range(n_steps-horizon):
 	else:
 		ddm_states[:,idt+1] = x_next[3:,-1]
 		ddm_forces[:,idt+1] = np.array([Ffy[idt+1], Frx[idt+1], Fry[idt+1]])
-	if states[0,idt] > 1.2 and idt > 100:
+	if states[0,idt] > 1.0 and idt > 300:
 		print("Lap Time:", Ts * idt)
 		break
 	plt.pause(Ts/100)
@@ -233,7 +251,7 @@ plt.ioff()
 
 if SAVE_RESULTS:
 	np.savez(
-		'../data/DYN-NMPC-{}{}-{}.npz'.format(SUFFIX, TRACK_NAME, "DEEP-DYNAMICS"),
+		'/home/a/deep-dynamics/deep_dynamics/data/DYN-NMPC-{}{}-{}.npz'.format(SUFFIX, TRACK_NAME, "DEEP-DYNAMICS"),
 		time=time,
 		states=states,
 		dstates=dstates,

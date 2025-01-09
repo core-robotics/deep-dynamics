@@ -21,7 +21,7 @@ SAVE_RESULTS = False
 
 Ts = 0.02
 HORIZON = 15
-
+# HORIZON = 1
 #####################################################################
 # load track
 
@@ -37,9 +37,14 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
-param_file = "../cfgs/model/deep_dynamics.yaml"
-state_dict = "../output/deep_dynamics/16layers_436neurons_2batch_0.000144lr_5horizon_7gru/epoch_385.pth"
-dataset_file = "../data/DYN-NMPC-NOCONS-ETHZMobil.npz"
+# param_file = "../cfgs/model/deep_dynamics.yaml"
+# state_dict = "../output/deep_dynamics/16layers_436neurons_2batch_0.000144lr_5horizon_7gru/epoch_385.pth"
+# dataset_file = "../data/DYN-NMPC-NOCONS-ETHZMobil.npz"
+
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics.yaml"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_dynamics/mo1/epoch_382.pth"
+dataset_file = "/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil.npz"
+
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	ddm_scaler = pickle.load(f)
 
@@ -87,7 +92,9 @@ for inputs, labels, norm_inputs in tqdm(ddm_data_loader, total=len(ddm_predictio
 	displacement_error = 0.0
 	for idh in range(HORIZON):
 		# Predict over horizon
+		# print("idt:", idt, "idh:", idh)
 		ddm_next, _ = ddm_model.sim_continuous(ddm_predictions[idt,:,idh], driving_inputs[idt+idh].reshape(-1,1), [0, Ts], np.zeros((8,1)))
+		# ddm_next, _ = ddm_model.sim_continuous(ddm_predictions[idt,:,idh], driving_inputs[idt].reshape(-1,1), [0, Ts], np.zeros((8,1)))
 		ddm_predictions[idt,:,idh+1] = ddm_next[:,-1]
 		displacement_error += np.sum(np.linalg.norm(ddm_predictions[idt,:2,idh+1] - poses[idt+idh+1,:2]))
 	average_displacement_error += displacement_error / HORIZON
@@ -100,8 +107,12 @@ print("DDM Final Displacement Error:", final_displacement_error)
 
 	
 # DPM GT
-param_file = "../cfgs/model/deep_pacejka.yaml"
-state_dict = "../output/deep_pacejka/2layers_108neurons_16batch_0.002812lr_10horizon_8gru/epoch_385.pth"
+# param_file = "../cfgs/model/deep_pacejka.yaml"
+# state_dict = "../output/deep_pacejka/2layers_108neurons_16batch_0.002812lr_10horizon_8gru/epoch_385.pth"
+
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_pacejka.yaml"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_pacejka/mo1/epoch_318.pth"
+
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	dpm_scaler = pickle.load(f)
 with open(param_file, 'rb') as f:
@@ -152,8 +163,10 @@ print("DPM GT Average Displacement Error:", average_displacement_error)
 print("DPM GT Final Displacement Error:", final_displacement_error)
 
 # DPM Iz + 20%
-param_file = "../cfgs/model/deep_pacejka.yaml"
-state_dict = "../output/deep_pacejka/plus20/epoch_344.pth"
+# param_file = "../cfgs/model/deep_pacejka.yaml"
+# state_dict = "../output/deep_pacejka/plus20/epoch_344.pth"
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_pacejka.yaml"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_pacejka/mo1/epoch_318.pth"
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	dpm_scaler = pickle.load(f)
 with open(param_file, 'rb') as f:
@@ -206,8 +219,10 @@ print("DPM +20 Average Displacement Error:", average_displacement_error)
 print("DPM +20 Final Displacement Error:", final_displacement_error)
 
 # DPM Iz - 20%
-param_file = "../cfgs/model/deep_pacejka.yaml"
-state_dict = "../output/deep_pacejka/minus20/epoch_364.pth"
+# param_file = "../cfgs/model/deep_pacejka.yaml"
+# state_dict = "../output/deep_pacejka/minus20/epoch_364.pth"
+param_file = "/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_pacejka.yaml"
+state_dict = "/home/a/deep-dynamics/deep_dynamics/output/deep_pacejka/mo1/epoch_318.pth"
 param_dict["VEHICLE_SPECS"]["Iz"] *= 0.8
 with open(os.path.join(os.path.dirname(state_dict), "scaler.pkl"), "rb") as f:
 	dpm_scaler = pickle.load(f)
@@ -261,7 +276,7 @@ print("DPM -20 Final Displacement Error:", final_displacement_error)
 
 #####################################################################
 # plots
-font = {'family' : 'normal',
+font = {'family' : 'DejaVu Sans',
         'weight' : 'normal',
         'size'   : 22}
 matplotlib.rc('font', **font)

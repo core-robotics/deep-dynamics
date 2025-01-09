@@ -23,3 +23,7 @@ dependencies = [
     "scikit-learn"
 ]
 dynamic = ["version"]
+
+
+[tool.setuptools.packages.find]
+include = ["bayes_race*", "deep_dynamics*"]
