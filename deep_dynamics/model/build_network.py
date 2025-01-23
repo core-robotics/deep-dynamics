@@ -3,12 +3,14 @@
 import yaml
 import sys
 import torch
+import tcn_model
 
 string_to_torch = {
     # Layers
     "GRU" :  torch.nn.GRU,
     "DENSE" : torch.nn.Linear,
     "LSTM" : torch.nn.LSTM,
+    "TCN" : tcn_model.TCN,
     # Activations
     "ReLU": torch.nn.ReLU,
     "Mish": torch.nn.Mish,
