@@ -5,7 +5,6 @@ import tcn_model
 import numpy as np
 import time
 from sklearn.preprocessing import StandardScaler
-from matplotlib import pyplot as plt
 
 # Determine device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -33,17 +32,23 @@ string_to_torch = {
 
 def build_network(param_dict):
 
-    horizon = param_dict["MODEL"]["HORIZON"]
-    num_states = len(param_dict["STATE"])
-    num_actions = len(param_dict["ACTIONS"])
+    # horizon = param_dict["MODEL"]["HORIZON"]
+    horizon = 5
+    # num_states = len(param_dict["STATE"])
+    num_states = 5
+    # num_actions = len(param_dict["ACTIONS"])
+    num_actions = 2
     layers = []
     
-    for i in range(len(param_dict["MODEL"]["LAYERS"])):
+    # for i in range(len(param_dict["MODEL"]["LAYERS"])):
+    for i in range(17):
         if i == 0:
             input_size = (num_states + num_actions) * horizon
         else:
-            input_size = param_dict["MODEL"]["LAYERS"][i-1]["OUT_FEATURES"]
-        output_size = param_dict["MODEL"]["LAYERS"][i]["OUT_FEATURES"]
+            # input_size = param_dict["MODEL"]["LAYERS"][i-1]["OUT_FEATURES"]
+            input_size = 436
+        # output_size = param_dict["MODEL"]["LAYERS"][i]["OUT_FEATURES"]
+        output_size = 436
         module = create_module(list(param_dict["MODEL"]["LAYERS"][i].keys())[0],
                                input_size, horizon, output_size, param_dict["MODEL"]["LAYERS"][i].get("LAYERS"),
                                param_dict["MODEL"]["LAYERS"][i].get("ACTIVATION"))
@@ -53,10 +58,13 @@ def build_network(param_dict):
 def create_module(name, input_size, horizon, output_size, layers=None, activation=None):
     if layers:
         module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
+        # module = [torch.nn.GRU(input_size // horizon, horizon, layers, batch_first=True)]
     elif activation:
         module = [string_to_torch[name](input_size, output_size), string_to_torch[activation]()]
+        # module = [torch.nn.Linear(input_size, output_size), torch.nn.Mish()]
     else:
         module = [string_to_torch[name](input_size, output_size)]
+        # module = [torch.nn.Linear(input_size, output_size)]
     return module
 class DeepDynamicsDataset(torch.utils.data.Dataset):
     def __init__(self, features, labels, scaler=None):
@@ -92,9 +100,10 @@ class DeepDynamicsModel(nn.Module):
         class GuardLayer(nn.Module):
             def __init__(self, param_dict):
                 super().__init__()
-                guard_output = create_module("DENSE", param_dict["MODEL"]["LAYERS"][-1]["OUT_FEATURES"],
-                                             param_dict["MODEL"]["HORIZON"], len(param_dict["PARAMETERS"]),
-                                             activation="Sigmoid")
+                # guard_output = create_module("DENSE", param_dict["MODEL"]["LAYERS"][-1]["OUT_FEATURES"],
+                #                              param_dict["MODEL"]["HORIZON"], len(param_dict["PARAMETERS"]),
+                #                              activation="Sigmoid")
+                guard_output = create_module("DENSE", 436,5,17, activation="Sigmoid")
                 self.guard_dense = guard_output[0]
                 self.guard_activation = guard_output[1]
                 self.coefficient_ranges = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
@@ -111,20 +120,28 @@ class DeepDynamicsModel(nn.Module):
         super().__init__()
         self.param_dict = param_dict
         layers = build_network(self.param_dict)
-        self.batch_size = self.param_dict["MODEL"]["OPTIMIZATION"]["BATCH_SIZE"]
-        self.rnn_n_layers = self.param_dict["MODEL"]["LAYERS"][0].get("LAYERS")
-        self.rnn_hiden_dim = self.param_dict["MODEL"]["HORIZON"]
+        # self.batch_size = self.param_dict["MODEL"]["OPTIMIZATION"]["BATCH_SIZE"]
+        self.batch_size = 32
+        # self.rnn_n_layers = self.param_dict["MODEL"]["LAYERS"][0].get("LAYERS")
+        self.rnn_n_layers = 7
+        # self.rnn_hiden_dim = self.param_dict["MODEL"]["HORIZON"]
+        self.rnn_hiden_dim = 5
         layers.insert(1, nn.Flatten())
-        self.horizon = self.param_dict["MODEL"]["HORIZON"]
+        # self.horizon = self.param_dict["MODEL"]["HORIZON"]
+        self.horizon = 5
         layers.extend([GuardLayer(param_dict)])
         self.feed_forward = nn.ModuleList(layers)
         if eval:
-            self.loss_function = string_to_torch[self.param_dict["MODEL"]["OPTIMIZATION"]["LOSS"]](reduction='none')
+            # self.loss_function = string_to_torch[self.param_dict["MODEL"]["OPTIMIZATION"]["LOSS"]](reduction='none')
+            self.loss_function = string_to_torch["MSE"](reduction='none')
         else:
-            self.loss_function = string_to_torch[self.param_dict["MODEL"]["OPTIMIZATION"]["LOSS"]]()
-        self.optimizer = string_to_torch[self.param_dict["MODEL"]["OPTIMIZATION"]["OPTIMIZER"]](self.parameters(),
-                                                                                                lr=self.param_dict["MODEL"]["OPTIMIZATION"]["LR"])
-        self.epochs = self.param_dict["MODEL"]["OPTIMIZATION"]["NUM_EPOCHS"]
+            # self.loss_function = string_to_torch[self.param_dict["MODEL"]["OPTIMIZATION"]["LOSS"]]()
+            self.loss_function = string_to_torch["MSE"]()
+        # self.optimizer = string_to_torch[self.param_dict["MODEL"]["OPTIMIZATION"]["OPTIMIZER"]](self.parameters(),
+        #                                                                                         lr=self.param_dict["MODEL"]["OPTIMIZATION"]["LR"])
+        self.optimizer = string_to_torch["Adam"](self.parameters(), lr=0.0006)
+        # self.epochs = self.param_dict["MODEL"]["OPTIMIZATION"]["NUM_EPOCHS"]
+        self.epochs = 400
         self.state = list(self.param_dict["STATE"])
         self.actions = list(self.param_dict["ACTIONS"])
         self.sys_params = list([*(list(p.keys())[0] for p in self.param_dict["PARAMETERS"])])
@@ -217,141 +234,84 @@ def pretty(d, indent=0):
          pretty(value, indent+1)
       else:
          print('\t' * (indent+1) + str(value))
-
-def train_epoch(model, data_loader,weights):
-    train_steps = 0
-    train_loss_accum = 0.0
-    h= model.init_hidden(model.batch_size)
-    for inputs, labels, norm_inputs in data_loader:
-        inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        h = h.data
-        model.zero_grad()
-        output, h, _ = model(inputs, norm_inputs, h)
-        loss= model.weighted_mse_loss(output, labels, weights).mean()
-        train_loss_accum += loss.item()
-        train_steps += 1
-        loss.backward()
-        model.optimizer.step()
-    return train_loss_accum/train_steps
-    
-def val_epoch(model, data_loader, weights):
-    val_steps = 0
-    val_loss_accum = 0.0
-    for inputs, labels, norm_inputs in data_loader:
-        val_h = model.init_hidden(inputs.shape[0])
-        inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        val_h = val_h.data
-        output, val_h, _ = model(inputs, norm_inputs, val_h)
-        val_loss = model.weighted_mse_loss(output, labels, weights).mean()
-        val_loss_accum += val_loss.item()
-        val_steps += 1
-    return val_loss_accum/val_steps
-    
-
-def test_epoch(model, data_loader):
-    test_losses = []
-    predictions = []
-    ground_truth = []
-    inference_times = []
-    errors = []
-    max_errors = [0.0, 0.0, 0.0]
+      
+def run_epoch(model, data_loader, is_train=True, is_print_param=False):
     model.to(device)
-    sys_params = []
+    weights = torch.tensor([1.0, 1.0, 1.0]).to(device)
+    total_loss = 0.0
+    steps = 0
+
+    if is_print_param and not is_train:
+        sys_params = []
+
     for inputs, labels, norm_inputs in data_loader:
-        h = model.init_hidden(inputs.shape[0])
-        h = h.data
         inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        start= time.time()
-        output, h, sysid = model(inputs, norm_inputs, h)
-        end = time.time()
-        inference_times.append(end-start)
-        test_loss = model.loss_function(output.squeeze(), labels.squeeze().float())
-        error = output.squeeze() - labels.squeeze().float()
-        error = np.abs(error.cpu().detach().numpy())
-        errors.append(error)
-        for i in range(3):
-            if error[i] > max_errors[i]:
-                max_errors[i] = error[i]
-        test_losses.append(test_loss.cpu().detach().numpy())
-        predictions.append(output.squeeze())
-        ground_truth.append(labels.cpu())
-        sys_params.append(sysid.cpu().detach().numpy())
-    
-    means, _ = model.unpack_sys_params(np.mean(sys_params, axis=0))
-    std_dev, _ = model.unpack_sys_params(np.std(sys_params, axis=0))
-    min, _ = model.unpack_sys_params(np.min(sys_params, axis=0))
-    max, _ = model.unpack_sys_params(np.max(sys_params, axis=0))
-    
-    coeff_names = list(means.keys())
-    coeff_means = np.array(list(means.values())).flatten()  
-    coeff_std = np.array(list(std_dev.values())).flatten() 
-    
-    coeff_dict = dict(zip(coeff_names, coeff_means))
-    _, ground_truth_dict = model.unpack_sys_params(np.std(sys_params, axis=0))
-    
-    del ground_truth_dict["Min"]
-    del ground_truth_dict["Max"]    
-    
-    
-    print("\nCoefficients-----------------")
-    for key, value in coeff_dict.items():
-        print(key, value)
-    print("\nCoefficients GT-----------------")
-    for key, value in ground_truth_dict.items():
-        print(key, value)
+        ##for GRU and RNN
+        h = model.init_hidden(inputs.shape[0]).data
         
-   
+        # #for LSTM
+        # h, c = model.init_hidden(inputs.shape[0]) 
+        # h, c = h.to(device), c.to(device)
+        # model.zero_grad()
 
-    print("\nState Error-----------------")
-    print("RMSE: ", np.sqrt(np.mean(test_losses, axis=0)))
-    print("\nMax Errors")
-    print("Vx: ", max_errors[0])
-    print("Vy: ", max_errors[1])
-    print("Yaw Rate: ", max_errors[2])
-    print("\nMean Error")
-    print("Vx: ", np.mean(np.array(errors)[:,0]))
-    print("Vy: ", np.mean(np.array(errors)[:,1]))
-    print("Yaw Rate: ", np.mean(np.array(errors)[:,2]))
-    print("\nMean Inference Time: ", np.mean(inference_times))
-    print("\n")
-    # print("Coeff Error-----------------")
-    
-    
-    
-    
-    # return error_dict
+        # # For GRU and RNN
+        output, h, sysid = model(inputs, norm_inputs, h)
+        
+        # For LSTM
+        # output, (h, c), sysid = model(inputs, norm_inputs, (h,c))
+        
+        if is_train:
+            loss = model.weighted_mse_loss(output, labels, weights).mean()
+            total_loss += loss.item()
+            steps += 1
+            loss.backward()
+            model.optimizer.step()
+        elif is_print_param:
+            sys_params.append(sysid.cpu().detach().numpy())
+        else:
+            loss = model.weighted_mse_loss(output, labels, weights).mean()
+            total_loss += loss.item()
+            steps += 1
 
+    if is_print_param and not is_train:
+        means, _ = model.unpack_sys_params(np.mean(sys_params, axis=0))
+        print("------------------------------------")
+        print("Mean Coefficient Values")
+        print("------------------------------------")
+        pretty(means)
+        print("------------------------------------")
+        
+        return  # No loss calculation needed in this mode
 
+    return total_loss / steps if steps > 0 else None
 
 def train(model, train_data_loader, val_data_loader, test_data_loader):
     valid_loss_min = torch.inf
-    model.train()
-    model.cuda()
-    weights = torch.tensor([1.0, 1.0, 1.0]).to(device)
-    
     for i in range(model.epochs):
         model.train()
-        train_loss=train_epoch(model, train_data_loader, weights)
-        
+        train_loss = run_epoch(model, train_data_loader, is_train=True)
         model.eval()
-        val_loss = val_epoch(model, val_data_loader, weights)
+        val_loss = run_epoch(model, val_data_loader, is_train=False)
         
         if val_loss < valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}).'.format(valid_loss_min,val_loss))
             valid_loss_min = val_loss
+            
+            #save the model
+            # torch.save(model.state_dict(), '/home/a/f1tenth_ws/src/online_deep_dynamics/output/LSTM/LSTM.pth')
+            
         
+        if (i+1) % 100 == 0:
+            model.eval()
+            run_epoch(model, test_data_loader, is_train=False, is_print_param=True)
+        
+    
         print("Epoch: {}/{}...".format(i+1, model.epochs),
             "Train Loss: {:.6f}...".format(train_loss),
             "Val Loss: {:.6f}".format(val_loss))
-        
         if np.isnan(val_loss):
             break
-        
-        if (i+1) % 10 == 0:
-            model.eval()
-            coeff_dict=test_epoch(model, test_data_loader)
-
-
+    model.train()
 
 if __name__ == "__main__":
     # Load dataset and configuration
