@@ -1,12 +1,12 @@
 import yaml
 import torch
 from torch import nn
-import tcn_model
+import tcn
 import numpy as np
 import time
 from sklearn.preprocessing import StandardScaler
 from matplotlib import pyplot as plt
-
+from tabulate import tabulate
 # Determine device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -16,7 +16,7 @@ string_to_torch = {
     "DENSE" : torch.nn.Linear,
     "LSTM" : torch.nn.LSTM,
     "RNN" : torch.nn.RNN,
-    "TCN" : tcn_model.TCN,
+    "TCN" : tcn.TemporalConvNet,
     # Activations
     "ReLU": torch.nn.ReLU,
     "Mish": torch.nn.Mish,
@@ -44,17 +44,22 @@ def build_network(param_dict):
         else:
             input_size = param_dict["MODEL"]["LAYERS"][i-1]["OUT_FEATURES"]
         output_size = param_dict["MODEL"]["LAYERS"][i]["OUT_FEATURES"]
-        module = create_module(list(param_dict["MODEL"]["LAYERS"][i].keys())[0],
-                               input_size, horizon, output_size, param_dict["MODEL"]["LAYERS"][i].get("LAYERS"),
-                               param_dict["MODEL"]["LAYERS"][i].get("ACTIVATION"))
+        module = create_module(list(
+            param_dict["MODEL"]["LAYERS"][i].keys())[0],
+            input_size,
+            horizon,
+            output_size,
+            param_dict["MODEL"]["LAYERS"][i].get("LAYERS"),
+            param_dict["MODEL"]["LAYERS"][i].get("ACTIVATION")
+            )
         layers += module
     return layers
 
-def create_module(name, input_size, horizon, output_size, layers=None, activation=None):
+def create_module(name, input_size, horizon, output_size, layers=None, activation=None, is_tcn=None):
     if layers:
         module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
     elif activation:
-        module = [string_to_torch[name](input_size, output_size), string_to_torch[activation]()]
+        module = [string_to_torch[name](input_size, output_size), string_to_torch[activation]()] 
     else:
         module = [string_to_torch[name](input_size, output_size)]
     return module
@@ -87,27 +92,30 @@ class DeepDynamicsDataset(torch.utils.data.Dataset):
         split_id = int(len(self)* percent)
         torch.manual_seed(0)
         return torch.utils.data.random_split(self, [split_id, (len(self) - split_id)])
+                        
+class GuardLayer(nn.Module):
+    def __init__(self, param_dict):
+        super().__init__()
+        guard_output = create_module("DENSE", 
+                                        param_dict["MODEL"]["LAYERS"][-1]["OUT_FEATURES"],
+                                        param_dict["MODEL"]["HORIZON"], len(param_dict["PARAMETERS"]),
+                                        activation="Sigmoid")
+        
+        self.guard_dense = guard_output[0]
+        self.guard_activation = guard_output[1]
+        self.coefficient_ranges = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
+        self.coefficient_mins = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
+        for i in range(len(param_dict["PARAMETERS"])):
+            self.coefficient_ranges[i] = param_dict["PARAMETERS"][i]["Max"]- param_dict["PARAMETERS"][i]["Min"]
+            self.coefficient_mins[i] = param_dict["PARAMETERS"][i]["Min"]
+
+    def forward(self, x):
+        guard_output = self.guard_dense(x)
+        guard_output = self.guard_activation(guard_output) * self.coefficient_ranges + self.coefficient_mins
+        return guard_output
+
 class DeepDynamicsModel(nn.Module):
     def __init__(self, param_dict, eval=False):
-        class GuardLayer(nn.Module):
-            def __init__(self, param_dict):
-                super().__init__()
-                guard_output = create_module("DENSE", param_dict["MODEL"]["LAYERS"][-1]["OUT_FEATURES"],
-                                             param_dict["MODEL"]["HORIZON"], len(param_dict["PARAMETERS"]),
-                                             activation="Sigmoid")
-                self.guard_dense = guard_output[0]
-                self.guard_activation = guard_output[1]
-                self.coefficient_ranges = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
-                self.coefficient_mins = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
-                for i in range(len(param_dict["PARAMETERS"])):
-                    self.coefficient_ranges[i] = param_dict["PARAMETERS"][i]["Max"]- param_dict["PARAMETERS"][i]["Min"]
-                    self.coefficient_mins[i] = param_dict["PARAMETERS"][i]["Min"]
-
-            def forward(self, x):
-                guard_output = self.guard_dense(x)
-                guard_output = self.guard_activation(guard_output) * self.coefficient_ranges + self.coefficient_mins
-                return guard_output
-        
         super().__init__()
         self.param_dict = param_dict
         layers = build_network(self.param_dict)
@@ -167,7 +175,12 @@ class DeepDynamicsModel(nn.Module):
                     ff, h0 = self.feed_forward[0](ff, h0)
                 else:
                     ff = self.feed_forward[i](ff)
+        # print("X: ", x.shape)
+        # print("FF: ", ff.shape)
+        # print("H0: ", h0.shape)
         o = self.differential_equation(x, ff)
+        # print("O: ", o.shape)
+        # print()
         return o, h0, ff
     
     def unpack_sys_params(self, o):
@@ -189,7 +202,12 @@ class DeepDynamicsModel(nn.Module):
             state_action_dict[self.actions[i]] = x[:,-1, global_index]
             global_index += 1
         return state_action_dict
-
+    
+    # #for TCN
+    # def init_hidden(self, batch_size):
+    #     return None
+    
+    #for GRU
     def init_hidden(self, batch_size):
         weight = next(self.parameters()).data
         hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
@@ -292,35 +310,59 @@ def test_epoch(model, data_loader):
     del ground_truth_dict["Min"]
     del ground_truth_dict["Max"]    
     
-    
-    print("\nCoefficients-----------------")
-    for key, value in coeff_dict.items():
-        print(key, value)
-    print("\nCoefficients GT-----------------")
-    for key, value in ground_truth_dict.items():
-        print(key, value)
-        
-   
 
-    print("\nState Error-----------------")
+    # Prepare data for the table
+    param_table_data = []
+    param_table_headers = ["Parameter", "Ground Truth", "Predicted", "Percent Error"]
+
+    for key in coeff_dict.keys():
+        coeff_value = coeff_dict[key]
+        gt_value = ground_truth_dict[key]
+        percent_error = abs((coeff_value - gt_value) / gt_value) * 100
+        param_table_data.append([key, gt_value, coeff_value, f"{percent_error:.2f}%"])
+
+    # Print the table
+    print(tabulate(param_table_data, headers=param_table_headers, tablefmt="grid"))
+    
+    state_table_data = []
+    state_table_headers = ["State", "Mean Error", "Max Error"]
+    
+    for i in range(3):
+        state_table_data.append([model.state[i], np.mean(np.array(errors)[:,i]), max_errors[i]])
+        
+    print(tabulate(state_table_data, headers=state_table_headers, tablefmt="grid"))
+    
     print("RMSE: ", np.sqrt(np.mean(test_losses, axis=0)))
-    print("\nMax Errors")
-    print("Vx: ", max_errors[0])
-    print("Vy: ", max_errors[1])
-    print("Yaw Rate: ", max_errors[2])
-    print("\nMean Error")
-    print("Vx: ", np.mean(np.array(errors)[:,0]))
-    print("Vy: ", np.mean(np.array(errors)[:,1]))
-    print("Yaw Rate: ", np.mean(np.array(errors)[:,2]))
     print("\nMean Inference Time: ", np.mean(inference_times))
     print("\n")
-    # print("Coeff Error-----------------")
     
-    
-    
-    
-    # return error_dict
+    # plt.close("all")
+    # rmse_value = np.sqrt(np.mean(test_losses, axis=0))  # test_losses가 numpy 배열이라고 가정
+    # mean_inference_time = np.mean(inference_times)
 
+    # fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 8))
+
+    # # axes[0].axis('tight')
+    # axes[0].axis('off')
+    # param_table = axes[0].table(cellText=param_table_data,
+    #                             colLabels=param_table_headers,
+    #                             cellLoc='center',
+    #                             loc='center')
+    
+    # axes[1].axis('off')
+    # axes[1].set_title("State Error")
+    # state_table = axes[1].table(cellText=state_table_data,
+    #                             colLabels=state_table_headers,
+    #                             cellLoc='center',
+    #                             loc='center')
+    
+
+    # plt.figtext(0.5, 0.02,
+    #             f"RMSE: {rmse_value}    Mean Inference Time: {mean_inference_time}",
+    #             ha="center", fontsize=12, bbox={"facecolor": "lightgray", "alpha": 0.5, "pad": 5})
+
+    # plt.tight_layout()  
+    # plt.pause(0.01) 
 
 
 def train(model, train_data_loader, val_data_loader, test_data_loader):
@@ -349,7 +391,7 @@ def train(model, train_data_loader, val_data_loader, test_data_loader):
         
         if (i+1) % 10 == 0:
             model.eval()
-            coeff_dict=test_epoch(model, test_data_loader)
+            test_epoch(model, test_data_loader)
 
 
 
@@ -365,6 +407,7 @@ if __name__ == "__main__":
     
     # Initialize the model
     model = DeepDynamicsModel(param_dict, eval=False)
+    print("model:"  , model)
     dataset= DeepDynamicsDataset(features, labels)
     
     train_dataset, val_dataset = dataset.split(0.8)

@@ -69,7 +69,11 @@ MODEL:
   LAYERS:
     - GRU:
       OUT_FEATURES: 25
-      LAYERS: 7
+      LAYERS: 6
+    # -TCN:
+    #   OUT_FEATURES: 25
+    #   LAYERS: 6
+    #   KERNEL_SIZE: 2
     - DENSE:
       OUT_FEATURES: 436
       ACTIVATION: Mish
