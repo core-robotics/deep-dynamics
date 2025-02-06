@@ -1,93 +1,174 @@
-import yaml
 import torch
 from torch import nn
-import pytorch_tcn.tcn as tcn
+import yaml
 import numpy as np
 import time
 from sklearn.preprocessing import StandardScaler
-from matplotlib import pyplot as plt
 from tabulate import tabulate
+
 # Determine device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# 문자열을 실제 torch 모듈로 연결하는 사전 (TCN은 별도 구현)
 string_to_torch = {
     # Layers
-    "GRU" :  torch.nn.GRU,
-    "DENSE" : torch.nn.Linear,
-    "LSTM" : torch.nn.LSTM,
-    "RNN" : torch.nn.RNN,
-    "TCN" : tcn.TCN,
+    "DENSE": torch.nn.Linear,
+    "LSTM": torch.nn.LSTM,
+    "GRU": torch.nn.GRU,
+    "RNN": torch.nn.RNN,
     # Activations
     "ReLU": torch.nn.ReLU,
     "Mish": torch.nn.Mish,
     "Softplus": torch.nn.Softplus,
     "Sigmoid": torch.nn.Sigmoid,
     # Loss Functions
-    "MSE" : torch.nn.MSELoss,
-    "MAE" : torch.nn.SmoothL1Loss,
+    "MSE": torch.nn.MSELoss,
+    "MAE": torch.nn.SmoothL1Loss,
     # Optimizers
-    "Adam" : torch.optim.Adam,
-    "NAdam" : torch.optim.NAdam,
-    "AdamW" : torch.optim.AdamW
+    "Adam": torch.optim.Adam,
+    "NAdam": torch.optim.NAdam,
+    "AdamW": torch.optim.AdamW
 }
 
-def build_network(param_dict):
+##########################################
+# Chomp1d 모듈: 컨볼루션 후 늘어난 시퀀스 길이에서 trailing 부분을 제거
+##########################################
+class Chomp1d(nn.Module):
+    def __init__(self, chomp_size):
+         super(Chomp1d, self).__init__()
+         self.chomp_size = chomp_size
+    def forward(self, x):
+         # chomp_size 만큼의 마지막 시간축 요소를 잘라냄
+         return x[:, :, :-self.chomp_size] if self.chomp_size > 0 else x
 
-    horizon = param_dict["MODEL"]["HORIZON"]
-    num_states = len(param_dict["STATE"])
-    num_actions = len(param_dict["ACTIONS"])
-    layers = []
-    
-    for i in range(len(param_dict["MODEL"]["LAYERS"])):
-        if i == 0:
-            input_size = (num_states + num_actions) * horizon
-        else:
-            input_size = param_dict["MODEL"]["LAYERS"][i-1]["OUT_FEATURES"]
-        output_size = param_dict["MODEL"]["LAYERS"][i]["OUT_FEATURES"]
-        module = create_module(list(
-            param_dict["MODEL"]["LAYERS"][i].keys())[0],
-            input_size,
-            horizon,
-            output_size,
-            param_dict["MODEL"]["LAYERS"][i].get("LAYERS"),
-            param_dict["MODEL"]["LAYERS"][i].get("ACTIVATION")
-            )
-        layers += module
-    return layers
+##########################################
+# TemporalBlock 모듈 수정 (Chomp1d 적용)
+##########################################
+class TemporalBlock(nn.Module):
+    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2):
+        super(TemporalBlock, self).__init__()
+        self.conv1 = nn.Conv1d(n_inputs, n_outputs, kernel_size,
+                               stride=stride, padding=padding, dilation=dilation)
+        self.chomp1 = Chomp1d(padding)
+        self.relu1 = nn.ReLU()
+        self.dropout1 = nn.Dropout(dropout)
+        self.conv2 = nn.Conv1d(n_outputs, n_outputs, kernel_size,
+                               stride=stride, padding=padding, dilation=dilation)
+        self.chomp2 = Chomp1d(padding)
+        self.relu2 = nn.ReLU()
+       
+        self.dropout2 = nn.Dropout(dropout)
+        self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
+        self.relu = nn.ReLU()
+        
 
+    def forward(self, x):
+        # 첫 번째 합성곱 + chomp → ReLU → Dropout
+        out = self.conv1(x)
+        out = self.chomp1(out)
+        out = self.relu1(out)
+        out = self.dropout1(out)
+        # 두 번째 합성곱 + chomp → ReLU → Dropout
+        out = self.conv2(out)
+        out = self.chomp2(out)
+        out = self.relu2(out)
+        out = self.dropout2(out)
+        # 잔차 연결: 다운샘플링이 필요한 경우 1x1 conv 적용
+        res = x if self.downsample is None else self.downsample(x)
+        return self.relu(out + res)
+
+##########################################
+# TCN 모듈 구현
+##########################################
+class TCN(nn.Module):
+    def __init__(self, num_inputs, num_channels, kernel_size=2, dropout=0.2):
+        """
+        num_inputs: 입력 채널 수  
+        num_channels: 각 층의 출력 채널 리스트 (예, [5, 5, 5, ...])  
+        kernel_size: 합성곱 커널 크기  
+        dropout: 드롭아웃 확률  
+        """
+        super(TCN, self).__init__()
+        layers = []
+        num_levels = len(num_channels)
+        for i in range(num_levels):
+            dilation_size = 2 ** i
+            in_channels = num_inputs if i == 0 else num_channels[i - 1]
+            out_channels = num_channels[i]
+            # padding = (kernel_size - 1) * dilation_size
+            padding = (kernel_size - 1) * dilation_size
+            layers += [TemporalBlock(in_channels, out_channels, kernel_size, stride=1,
+                                       dilation=dilation_size, padding=padding, dropout=dropout)]
+        self.network = nn.Sequential(*layers)
+
+    def forward(self, x):
+        """
+        TCN은 (batch, channels, seq_len)의 입력을 받습니다.
+        """
+        return self.network(x)
+
+##########################################
+# create_module 함수 (TCN 처리 추가)
+##########################################
 def create_module(name, input_size, horizon, output_size, layers=None, activation=None, is_tcn=None):
-    if layers:
-        # module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
-        channel_arr=[]
-        for i in range(layers):
-                # channel_arr.append(layers[i-1]["OUT_FEATURES"])
-                channel_arr.append(output_size)
-        module = [string_to_torch[name](input_size//horizon ,channel_arr,dropout=0.0)]
-            
+    if name == "TCN":
+        # 입력 텐서의 feature 수 = input_size // horizon
+        num_inputs = input_size // horizon  
+        # flatten 후 최종 차원을 맞추기 위해 각 시퀀스 길이 당 출력 채널은:
+        out_channels = output_size // horizon  
+        num_channels = [out_channels] * layers  
+        module = [TCN(num_inputs, num_channels, kernel_size=2, dropout=0.2)]
+    elif layers:
+        module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
     elif activation:
         module = [string_to_torch[name](input_size, output_size), string_to_torch[activation]()] 
     else:
         module = [string_to_torch[name](input_size, output_size)]
     return module
 
+def build_network(param_dict):
+    horizon = param_dict["MODEL"]["HORIZON"]
+    num_states = len(param_dict["STATE"])
+    num_actions = len(param_dict["ACTIONS"])
+    layers_list = []
+    
+    for i in range(len(param_dict["MODEL"]["LAYERS"])):
+        if i == 0:
+            input_size = (num_states + num_actions) * horizon
+        else:
+            prev_layer = param_dict["MODEL"]["LAYERS"][i-1]
+            key_prev = list(prev_layer.keys())[0]
+            input_size = prev_layer[key_prev]["OUT_FEATURES"]
+        current_layer = param_dict["MODEL"]["LAYERS"][i]
+        key_current = list(current_layer.keys())[0]
+        output_size = current_layer[key_current]["OUT_FEATURES"]
+        module = create_module(
+            key_current,
+            input_size,
+            horizon,
+            output_size,
+            current_layer[key_current].get("LAYERS"),
+            current_layer[key_current].get("ACTIVATION")
+        )
+        layers_list += module
+    return layers_list
+
 class DeepDynamicsDataset(torch.utils.data.Dataset):
     def __init__(self, features, labels, scaler=None):
         self.X_data = torch.from_numpy(features).float().to(device)
         self.y_data = torch.from_numpy(labels).float().to(device)
-        self.X_norm = torch.zeros(features.shape)
         num_instances, num_time_steps, num_features = features.shape
         train_data = features.reshape((-1, num_features))
         if scaler is None:
             self.scaler = StandardScaler()
             norm_train_data = self.scaler.fit_transform(train_data)
-            self.X_norm = torch.from_numpy(norm_train_data.reshape((num_instances, num_time_steps, num_features))).float().to(device)
         else:
             self.scaler = scaler
             norm_train_data = self.scaler.transform(train_data)
-            self.X_norm = torch.from_numpy(norm_train_data.reshape((num_instances, num_time_steps, num_features))).float().to(device)
+        self.X_norm = torch.from_numpy(norm_train_data.reshape((num_instances, num_time_steps, num_features))).float().to(device)
         
     def __len__(self):
-        return(self.X_data.shape[0])
+        return self.X_data.shape[0]
     
     def __getitem__(self, idx):
         x = self.X_data[idx]
@@ -96,24 +177,26 @@ class DeepDynamicsDataset(torch.utils.data.Dataset):
         return x, y, x_norm
     
     def split(self, percent):
-        split_id = int(len(self)* percent)
+        split_id = int(len(self) * percent)
         torch.manual_seed(0)
         return torch.utils.data.random_split(self, [split_id, (len(self) - split_id)])
                         
 class GuardLayer(nn.Module):
     def __init__(self, param_dict):
         super().__init__()
-        guard_output = create_module("DENSE", 
-                                        param_dict["MODEL"]["LAYERS"][-1]["OUT_FEATURES"],
-                                        param_dict["MODEL"]["HORIZON"], len(param_dict["PARAMETERS"]),
-                                        activation="Sigmoid")
-        
+        guard_output = create_module(
+            "DENSE", 
+            param_dict["MODEL"]["LAYERS"][-1][list(param_dict["MODEL"]["LAYERS"][-1].keys())[0]]["OUT_FEATURES"],
+            param_dict["MODEL"]["HORIZON"],
+            len(param_dict["PARAMETERS"]),
+            activation="Sigmoid"
+        )
         self.guard_dense = guard_output[0]
         self.guard_activation = guard_output[1]
         self.coefficient_ranges = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
         self.coefficient_mins = torch.zeros(len(param_dict["PARAMETERS"])).to(device)
         for i in range(len(param_dict["PARAMETERS"])):
-            self.coefficient_ranges[i] = param_dict["PARAMETERS"][i]["Max"]- param_dict["PARAMETERS"][i]["Min"]
+            self.coefficient_ranges[i] = param_dict["PARAMETERS"][i]["Max"] - param_dict["PARAMETERS"][i]["Min"]
             self.coefficient_mins[i] = param_dict["PARAMETERS"][i]["Min"]
 
     def forward(self, x):
@@ -121,14 +204,17 @@ class GuardLayer(nn.Module):
         guard_output = self.guard_activation(guard_output) * self.coefficient_ranges + self.coefficient_mins
         return guard_output
 
+
 class DeepDynamicsModel(nn.Module):
     def __init__(self, param_dict, eval=False):
         super().__init__()
         self.param_dict = param_dict
         layers = build_network(self.param_dict)
         self.batch_size = self.param_dict["MODEL"]["OPTIMIZATION"]["BATCH_SIZE"]
-        self.rnn_n_layers = self.param_dict["MODEL"]["LAYERS"][0].get("LAYERS")
+        # RNN 관련 파라미터 (TCN 사용 시 큰 영향 없음)
+        self.rnn_n_layers = self.param_dict["MODEL"]["LAYERS"][0][list(self.param_dict["MODEL"]["LAYERS"][0].keys())[0]].get("LAYERS")
         self.rnn_hiden_dim = self.param_dict["MODEL"]["HORIZON"]
+        # 첫 번째 층 다음에 Flatten 층 추가 (출력 shape 조정용)
         layers.insert(1, nn.Flatten())
         self.horizon = self.param_dict["MODEL"]["HORIZON"]
         layers.extend([GuardLayer(param_dict)])
@@ -142,21 +228,19 @@ class DeepDynamicsModel(nn.Module):
         self.epochs = self.param_dict["MODEL"]["OPTIMIZATION"]["NUM_EPOCHS"]
         self.state = list(self.param_dict["STATE"])
         self.actions = list(self.param_dict["ACTIONS"])
-        self.sys_params = list([*(list(p.keys())[0] for p in self.param_dict["PARAMETERS"])])
+        self.sys_params = [list(p.keys())[0] for p in self.param_dict["PARAMETERS"]]
         self.vehicle_specs = self.param_dict["VEHICLE_SPECS"]
-        
         
     def differential_equation(self, x, output, Ts=0.02):
         sys_param_dict, _ = self.unpack_sys_params(output)
         state_action_dict = self.unpack_state_actions(x)
         steering = state_action_dict["STEERING_FB"] + state_action_dict["STEERING_CMD"]
         throttle = state_action_dict["THROTTLE_FB"] + state_action_dict["THROTTLE_CMD"]
-        alphaf = steering - torch.atan2(self.vehicle_specs["lf"]*state_action_dict["YAW_RATE"] 
+        alphaf = steering - torch.atan2(self.vehicle_specs["lf"] * state_action_dict["YAW_RATE"] 
                                         + state_action_dict["VY"], torch.abs(state_action_dict["VX"])) + sys_param_dict["Shf"]
-        alphar = torch.atan2((self.vehicle_specs["lr"]*state_action_dict["YAW_RATE"] 
+        alphar = torch.atan2((self.vehicle_specs["lr"] * state_action_dict["YAW_RATE"] 
                               - state_action_dict["VY"]), torch.abs(state_action_dict["VX"])) + sys_param_dict["Shr"]
-        Frx = (sys_param_dict["Cm1"]-sys_param_dict["Cm2"]*state_action_dict["VX"])*throttle - sys_param_dict["Cr0"] 
-        - sys_param_dict["Cr2"]*(state_action_dict["VX"]**2)
+        Frx = (sys_param_dict["Cm1"] - sys_param_dict["Cm2"] * state_action_dict["VX"]) * throttle - sys_param_dict["Cr0"] - sys_param_dict["Cr2"] * (state_action_dict["VX"]**2)
         Ffy = sys_param_dict["Svf"] + sys_param_dict["Df"] * torch.sin(
             sys_param_dict["Cf"] * torch.atan(sys_param_dict["Bf"] * alphaf 
                                               - sys_param_dict["Ef"] * (sys_param_dict["Bf"] * alphaf - torch.atan(sys_param_dict["Bf"] * alphaf))))
@@ -164,127 +248,98 @@ class DeepDynamicsModel(nn.Module):
             sys_param_dict["Cr"] * torch.atan(sys_param_dict["Br"] * alphar 
                                               - sys_param_dict["Er"] * (sys_param_dict["Br"] * alphar - torch.atan(sys_param_dict["Br"] * alphar))))
         dxdt = torch.zeros(len(x), 3).to(device)
-        dxdt[:,0] = 1/self.vehicle_specs["mass"] * (Frx - Ffy*torch.sin(steering)) + state_action_dict["VY"]*state_action_dict["YAW_RATE"]
-        dxdt[:,1] = 1/self.vehicle_specs["mass"] * (Fry + Ffy*torch.cos(steering)) - state_action_dict["VX"]*state_action_dict["YAW_RATE"]
-        dxdt[:,2] = 1/sys_param_dict["Iz"] * (Ffy*self.vehicle_specs["lf"]*torch.cos(steering) - Fry*self.vehicle_specs["lr"])
+        dxdt[:, 0] = 1 / self.vehicle_specs["mass"] * (Frx - Ffy * torch.sin(steering)) + state_action_dict["VY"] * state_action_dict["YAW_RATE"]
+        dxdt[:, 1] = 1 / self.vehicle_specs["mass"] * (Fry + Ffy * torch.cos(steering)) - state_action_dict["VX"] * state_action_dict["YAW_RATE"]
+        dxdt[:, 2] = 1 / sys_param_dict["Iz"] * (Ffy * self.vehicle_specs["lf"] * torch.cos(steering) - Fry * self.vehicle_specs["lr"])
         dxdt *= Ts
-        return x[:,-1,:3] + dxdt
+        return x[:, -1, :3] + dxdt
 
-    # def forward(self, x, x_norm, h0=None):
-    #     for i in range(len(self.feed_forward)):
-    #         if i == 0:
-    #             if isinstance(self.feed_forward[i], torch.nn.RNNBase):
-    #                 ff, h0 = self.feed_forward[0](x_norm, h0)
-    #             else:
-    #                 ff = self.feed_forward[i](torch.reshape(x_norm, (len(x), -1)))
-    #         else:
-    #             if isinstance(self.feed_forward[i], torch.nn.RNNBase):
-    #                 ff, h0 = self.feed_forward[0](ff, h0)
-    #             else:
-    #                 ff = self.feed_forward[i](ff)
-    #     # print("X: ", x.shape)
-    #     # print("FF: ", ff.shape)
-    #     # print("H0: ", h0.shape)
-    #     o = self.differential_equation(x, ff)
-    #     # print("O: ", o.shape)
-    #     # print()
-    #     return o, h0, ff
-    
-    #for TCN
-    def forward(self, x, x_norm):
+    def forward(self, x, x_norm, h0=None):
         for i in range(len(self.feed_forward)):
             if i == 0:
-                ff = self.feed_forward[i](x_norm)
+                # 첫 번째 층이 TCN인 경우, 입력 텐서 x_norm의 shape를 (batch, channels, seq_len)으로 맞춤
+                if isinstance(self.feed_forward[i], TCN):
+                    ff = self.feed_forward[i](x_norm.permute(0, 2, 1))
+                elif isinstance(self.feed_forward[i], torch.nn.RNNBase):
+                    ff, h0 = self.feed_forward[i](x_norm, h0)
+                else:
+                    ff = self.feed_forward[i](torch.reshape(x_norm, (len(x), -1)))
             else:
-                ff = self.feed_forward[i](ff)
+                if isinstance(self.feed_forward[i], torch.nn.RNNBase):
+                    ff, h0 = self.feed_forward[i](ff, h0)
+                else:
+                    ff = self.feed_forward[i](ff)
         o = self.differential_equation(x, ff)
-        return o, ff, self.guard_dense(ff)
-        
+        return o, h0, ff
     
     def unpack_sys_params(self, o):
-        sys_params_dict = dict()
+        sys_params_dict = {}
         for i in range(len(self.sys_params)):
-            sys_params_dict[self.sys_params[i]] = o[:,i]
-        ground_truth_dict =  dict()
+            sys_params_dict[self.sys_params[i]] = o[:, i]
+        ground_truth_dict = {}
         for p in self.param_dict["PARAMETERS"]:
             ground_truth_dict.update(p)
         return sys_params_dict, ground_truth_dict
 
     def unpack_state_actions(self, x):
-        state_action_dict = dict()
+        state_action_dict = {}
         global_index = 0 
         for i in range(len(self.state)):
-            state_action_dict[self.state[i]] = x[:,-1, global_index]
+            state_action_dict[self.state[i]] = x[:, -1, global_index]
             global_index += 1
         for i in range(len(self.actions)):
-            state_action_dict[self.actions[i]] = x[:,-1, global_index]
+            state_action_dict[self.actions[i]] = x[:, -1, global_index]
             global_index += 1
         return state_action_dict
     
-    #for TCN
+    # for RNN (TCN 사용 시 init_hidden는 사용되지 않을 수 있음)
     def init_hidden(self, batch_size):
-       weight = next(self.parameters()).data
-       hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
-    
-    # #for GRU
-    # def init_hidden(self, batch_size):
-    #     weight = next(self.parameters()).data
-    #     hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
-    #     return hidden
-    
-    # #for LSTM
-    # def init_hidden(self, batch_size):
-    #     # Get the data type and device from the model's parameters
-    #     weight = next(self.parameters()).data
-        
-    #     # Initialize hidden state (h0) and cell state (c0) for LSTM
-    #     h0 = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)  # Hidden state
-    #     c0 = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)  # Cell state
-        
-    #     return h0, c0
-
+        weight = next(self.parameters()).data
+        hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
+        return hidden
     
     def weighted_mse_loss(self, input, target, weight):
         return (weight * (input - target) ** 2)
 
+##########################################
+# 기타 유틸리티 및 학습 관련 함수들 (변경 없음)
+##########################################
 def pretty(d, indent=0):
-   for key, value in d.items():
-      print('\t' * indent + str(key))
-      if isinstance(value, dict):
-         pretty(value, indent+1)
-      else:
-         print('\t' * (indent+1) + str(value))
+    for key, value in d.items():
+        print('\t' * indent + str(key))
+        if isinstance(value, dict):
+            pretty(value, indent+1)
+        else:
+            print('\t' * (indent+1) + str(value))
 
-def train_epoch(model, data_loader,weights):
+def train_epoch(model, data_loader, weights):
     train_steps = 0
     train_loss_accum = 0.0
-    # h= model.init_hidden(model.batch_size)
+    h = model.init_hidden(model.batch_size)
     for inputs, labels, norm_inputs in data_loader:
         inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        # h = h.data
+        h = h.data
         model.zero_grad()
-        # output, h, _ = model(inputs, norm_inputs, h)
-        output, _= model(inputs, norm_inputs)
-        loss= model.weighted_mse_loss(output, labels, weights).mean()
+        output, h, _ = model(inputs, norm_inputs, h)
+        loss = model.weighted_mse_loss(output, labels, weights).mean()
         train_loss_accum += loss.item()
         train_steps += 1
         loss.backward()
         model.optimizer.step()
-    return train_loss_accum/train_steps
-    
+    return train_loss_accum / train_steps
+
 def val_epoch(model, data_loader, weights):
     val_steps = 0
     val_loss_accum = 0.0
     for inputs, labels, norm_inputs in data_loader:
-        # val_h = model.init_hidden(inputs.shape[0])
+        val_h = model.init_hidden(inputs.shape[0])
         inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        # val_h = val_h.data
+        val_h = val_h.data
         output, val_h, _ = model(inputs, norm_inputs, val_h)
         val_loss = model.weighted_mse_loss(output, labels, weights).mean()
         val_loss_accum += val_loss.item()
         val_steps += 1
-    return val_loss_accum/val_steps
-    
+    return val_loss_accum / val_steps
 
 def test_epoch(model, data_loader):
     test_losses = []
@@ -296,13 +351,13 @@ def test_epoch(model, data_loader):
     model.to(device)
     sys_params = []
     for inputs, labels, norm_inputs in data_loader:
-        # h = model.init_hidden(inputs.shape[0])
-        # h = h.data
+        h = model.init_hidden(inputs.shape[0])
+        h = h.data
         inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        start= time.time()
+        start = time.time()
         output, h, sysid = model(inputs, norm_inputs, h)
         end = time.time()
-        inference_times.append(end-start)
+        inference_times.append(end - start)
         test_loss = model.loss_function(output.squeeze(), labels.squeeze().float())
         error = output.squeeze() - labels.squeeze().float()
         error = np.abs(error.cpu().detach().numpy())
@@ -317,8 +372,8 @@ def test_epoch(model, data_loader):
     
     means, _ = model.unpack_sys_params(np.mean(sys_params, axis=0))
     std_dev, _ = model.unpack_sys_params(np.std(sys_params, axis=0))
-    min, _ = model.unpack_sys_params(np.min(sys_params, axis=0))
-    max, _ = model.unpack_sys_params(np.max(sys_params, axis=0))
+    min_val, _ = model.unpack_sys_params(np.min(sys_params, axis=0))
+    max_val, _ = model.unpack_sys_params(np.max(sys_params, axis=0))
     
     coeff_names = list(means.keys())
     coeff_means = np.array(list(means.values())).flatten()  
@@ -327,84 +382,50 @@ def test_epoch(model, data_loader):
     coeff_dict = dict(zip(coeff_names, coeff_means))
     _, ground_truth_dict = model.unpack_sys_params(np.std(sys_params, axis=0))
     
-    del ground_truth_dict["Min"]
-    del ground_truth_dict["Max"]    
+    if "Min" in ground_truth_dict:
+        del ground_truth_dict["Min"]
+    if "Max" in ground_truth_dict:
+        del ground_truth_dict["Max"]    
     
-
-    # Prepare data for the table
     param_table_data = []
     param_table_headers = ["Parameter", "Ground Truth", "Predicted", "Percent Error"]
-
     for key in coeff_dict.keys():
         coeff_value = coeff_dict[key]
-        gt_value = ground_truth_dict[key]
+        gt_value = ground_truth_dict.get(key, 1)
         percent_error = abs((coeff_value - gt_value) / gt_value) * 100
         param_table_data.append([key, gt_value, coeff_value, f"{percent_error:.2f}%"])
-
-    # Print the table
     print(tabulate(param_table_data, headers=param_table_headers, tablefmt="grid"))
     
     state_table_data = []
     state_table_headers = ["State", "Mean Error", "Max Error"]
-    
     for i in range(3):
-        state_table_data.append([model.state[i], np.mean(np.array(errors)[:,i]), max_errors[i]])
-        
+        state_table_data.append([model.state[i], np.mean(np.array(errors)[:, i]), max_errors[i]])
     print(tabulate(state_table_data, headers=state_table_headers, tablefmt="grid"))
     
     print("RMSE: ", np.sqrt(np.mean(test_losses, axis=0)))
     print("\nMean Inference Time: ", np.mean(inference_times))
     print("\n")
     
-    # plt.close("all")
-    # rmse_value = np.sqrt(np.mean(test_losses, axis=0))  # test_losses가 numpy 배열이라고 가정
-    # mean_inference_time = np.mean(inference_times)
-
-    # fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 8))
-
-    # # axes[0].axis('tight')
-    # axes[0].axis('off')
-    # param_table = axes[0].table(cellText=param_table_data,
-    #                             colLabels=param_table_headers,
-    #                             cellLoc='center',
-    #                             loc='center')
-    
-    # axes[1].axis('off')
-    # axes[1].set_title("State Error")
-    # state_table = axes[1].table(cellText=state_table_data,
-    #                             colLabels=state_table_headers,
-    #                             cellLoc='center',
-    #                             loc='center')
-    
-
-    # plt.figtext(0.5, 0.02,
-    #             f"RMSE: {rmse_value}    Mean Inference Time: {mean_inference_time}",
-    #             ha="center", fontsize=12, bbox={"facecolor": "lightgray", "alpha": 0.5, "pad": 5})
-
-    # plt.tight_layout()  
-    # plt.pause(0.01) 
-
-
 def train(model, train_data_loader, val_data_loader, test_data_loader):
     valid_loss_min = torch.inf
     model.train()
-    model.cuda()
+    model.to(device)
     weights = torch.tensor([1.0, 1.0, 1.0]).to(device)
     
     for i in range(model.epochs):
         model.train()
-        train_loss=train_epoch(model, train_data_loader, weights)
+        train_loss = train_epoch(model, train_data_loader, weights)
         
         model.eval()
         val_loss = val_epoch(model, val_data_loader, weights)
         
         if val_loss < valid_loss_min:
-            print('Validation loss decreased ({:.6f} --> {:.6f}).'.format(valid_loss_min,val_loss))
+            print('Validation loss decreased ({:.6f} --> {:.6f}).'.format(valid_loss_min, val_loss))
             valid_loss_min = val_loss
         
         print("Epoch: {}/{}...".format(i+1, model.epochs),
-            "Train Loss: {:.6f}...".format(train_loss),
-            "Val Loss: {:.6f}".format(val_loss))
+              "Train Loss: {:.6f}...".format(train_loss),
+              "Val Loss: {:.6f}".format(val_loss))
         
         if np.isnan(val_loss):
             break
@@ -414,29 +435,83 @@ def train(model, train_data_loader, val_data_loader, test_data_loader):
             test_epoch(model, test_data_loader)
 
 
-
 if __name__ == "__main__":
-    # Load dataset and configuration
+    # 데이터 파일 로드 (파일 경로는 실제 환경에 맞게 수정)
     data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_5.npz')
-    param_dict = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_tcn.yaml'), Loader=yaml.SafeLoader)
-    # data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/LVMS_23_01_04_A_15.npz')
-    # param_dict = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_iac.yaml'), Loader=yaml.SafeLoader)
-    
     features = data_npz['features'][:, :, :7]
     labels = data_npz['labels']
     
-    # Initialize the model
-    model = DeepDynamicsModel(param_dict, eval=False)
-    print("model:"  , model)
-    dataset= DeepDynamicsDataset(features, labels)
+    # param_dict = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_tcn.yaml'), Loader=yaml.SafeLoader)
+   
+    param_dict = {
+        "STATE": ["VX", "VY", "YAW_RATE", "THROTTLE_FB", "STEERING_FB"],
+        "ACTIONS": ["THROTTLE_CMD", "STEERING_CMD"],
+        "PARAMETERS": [
+            {"Bf": 5.579, "Min": 5.0, "Max": 30.0},
+            {"Cf": 1.2, "Min": 0.5, "Max": 2.0},
+            {"Df": 0.192, "Min": 0.1, "Max": 0.9},
+            {"Ef": -0.083, "Min": -2.0, "Max": 0.0},
+            {"Br": 5.3852, "Min": 5.0, "Max": 30.0},
+            {"Cr": 1.2691, "Min": 0.5, "Max": 2.0},
+            {"Dr": 0.1737, "Min": 0.1, "Max": 0.9},
+            {"Er": -0.019, "Min": -2.0, "Max": 0.0},
+            {"Cm1": 0.287, "Min": 0.1435, "Max": 0.574},
+            {"Cm2": 0.0545, "Min": 0.02725, "Max": 0.109},
+            {"Cr0": 0.0518, "Min": 0.0259, "Max": 0.1036},
+            {"Cr2": 0.00035, "Min": 1.75e-4, "Max": 7.0e-4},
+            {"Iz": 27.8e-6, "Min": 1.39e-5, "Max": 5.56e-5},
+            {"Shf": -0.0013, "Min": -0.02, "Max": 0.02},
+            {"Svf": 0.00043, "Min": -0.003, "Max": 0.003},
+            {"Shr": -0.00376, "Min": -0.02, "Max": 0.02},
+            {"Svr": 0.00091, "Min": -0.003, "Max": 0.003}
+        ],
+        "VEHICLE_SPECS": {
+            "lf": 0.029,
+            "lr": 0.033,
+            "mass": 0.041
+        },
+        "MODEL": {
+            "NAME": "DeepDynamics",
+            "HORIZON": 5,
+            "LAYERS": [
+                {"TCN": {"OUT_FEATURES": 25, "LAYERS": 6}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
+                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}}
+            ],
+            "OPTIMIZATION": {
+                "LOSS": "MSE",
+                "BATCH_SIZE": 32,
+                "NUM_EPOCHS": 400,
+                "OPTIMIZER": "Adam",
+                "LR": 0.0006
+            }
+        }
+    }
     
+    # 모델 초기화
+    model = DeepDynamicsModel(param_dict, eval=False)
+    print("model:", model)
+    
+    # 데이터셋 생성 및 분할
+    dataset = DeepDynamicsDataset(features, labels)
     train_dataset, val_dataset = dataset.split(0.8)
     train_data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=model.batch_size, shuffle=True, drop_last=True)
     val_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=model.batch_size, shuffle=False)
     test_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False)
     
-    # Train the model
+    # 모델 학습 시작
     train(model, train_data_loader, val_data_loader, test_data_loader)
-    
-
-    
