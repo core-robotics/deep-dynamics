@@ -1,7 +1,7 @@
 import yaml
 import torch
 from torch import nn
-import tcn
+import pytorch_tcn.tcn as tcn
 import numpy as np
 import time
 from sklearn.preprocessing import StandardScaler
@@ -16,7 +16,7 @@ string_to_torch = {
     "DENSE" : torch.nn.Linear,
     "LSTM" : torch.nn.LSTM,
     "RNN" : torch.nn.RNN,
-    "TCN" : tcn.TemporalConvNet,
+    "TCN" : tcn.TCN,
     # Activations
     "ReLU": torch.nn.ReLU,
     "Mish": torch.nn.Mish,
@@ -57,12 +57,19 @@ def build_network(param_dict):
 
 def create_module(name, input_size, horizon, output_size, layers=None, activation=None, is_tcn=None):
     if layers:
-        module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
+        # module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
+        channel_arr=[]
+        for i in range(layers):
+                # channel_arr.append(layers[i-1]["OUT_FEATURES"])
+                channel_arr.append(output_size)
+        module = [string_to_torch[name](input_size//horizon ,channel_arr,dropout=0.0)]
+            
     elif activation:
         module = [string_to_torch[name](input_size, output_size), string_to_torch[activation]()] 
     else:
         module = [string_to_torch[name](input_size, output_size)]
     return module
+
 class DeepDynamicsDataset(torch.utils.data.Dataset):
     def __init__(self, features, labels, scaler=None):
         self.X_data = torch.from_numpy(features).float().to(device)
@@ -163,25 +170,36 @@ class DeepDynamicsModel(nn.Module):
         dxdt *= Ts
         return x[:,-1,:3] + dxdt
 
-    def forward(self, x, x_norm, h0=None):
+    # def forward(self, x, x_norm, h0=None):
+    #     for i in range(len(self.feed_forward)):
+    #         if i == 0:
+    #             if isinstance(self.feed_forward[i], torch.nn.RNNBase):
+    #                 ff, h0 = self.feed_forward[0](x_norm, h0)
+    #             else:
+    #                 ff = self.feed_forward[i](torch.reshape(x_norm, (len(x), -1)))
+    #         else:
+    #             if isinstance(self.feed_forward[i], torch.nn.RNNBase):
+    #                 ff, h0 = self.feed_forward[0](ff, h0)
+    #             else:
+    #                 ff = self.feed_forward[i](ff)
+    #     # print("X: ", x.shape)
+    #     # print("FF: ", ff.shape)
+    #     # print("H0: ", h0.shape)
+    #     o = self.differential_equation(x, ff)
+    #     # print("O: ", o.shape)
+    #     # print()
+    #     return o, h0, ff
+    
+    #for TCN
+    def forward(self, x, x_norm):
         for i in range(len(self.feed_forward)):
             if i == 0:
-                if isinstance(self.feed_forward[i], torch.nn.RNNBase):
-                    ff, h0 = self.feed_forward[0](x_norm, h0)
-                else:
-                    ff = self.feed_forward[i](torch.reshape(x_norm, (len(x), -1)))
+                ff = self.feed_forward[i](x_norm)
             else:
-                if isinstance(self.feed_forward[i], torch.nn.RNNBase):
-                    ff, h0 = self.feed_forward[0](ff, h0)
-                else:
-                    ff = self.feed_forward[i](ff)
-        # print("X: ", x.shape)
-        # print("FF: ", ff.shape)
-        # print("H0: ", h0.shape)
+                ff = self.feed_forward[i](ff)
         o = self.differential_equation(x, ff)
-        # print("O: ", o.shape)
-        # print()
-        return o, h0, ff
+        return o, ff, self.guard_dense(ff)
+        
     
     def unpack_sys_params(self, o):
         sys_params_dict = dict()
@@ -203,15 +221,16 @@ class DeepDynamicsModel(nn.Module):
             global_index += 1
         return state_action_dict
     
-    # #for TCN
-    # def init_hidden(self, batch_size):
-    #     return None
-    
-    #for GRU
+    #for TCN
     def init_hidden(self, batch_size):
-        weight = next(self.parameters()).data
-        hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
-        return hidden
+       weight = next(self.parameters()).data
+       hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
+    
+    # #for GRU
+    # def init_hidden(self, batch_size):
+    #     weight = next(self.parameters()).data
+    #     hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
+    #     return hidden
     
     # #for LSTM
     # def init_hidden(self, batch_size):
@@ -239,12 +258,13 @@ def pretty(d, indent=0):
 def train_epoch(model, data_loader,weights):
     train_steps = 0
     train_loss_accum = 0.0
-    h= model.init_hidden(model.batch_size)
+    # h= model.init_hidden(model.batch_size)
     for inputs, labels, norm_inputs in data_loader:
         inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        h = h.data
+        # h = h.data
         model.zero_grad()
-        output, h, _ = model(inputs, norm_inputs, h)
+        # output, h, _ = model(inputs, norm_inputs, h)
+        output, _= model(inputs, norm_inputs)
         loss= model.weighted_mse_loss(output, labels, weights).mean()
         train_loss_accum += loss.item()
         train_steps += 1
@@ -256,9 +276,9 @@ def val_epoch(model, data_loader, weights):
     val_steps = 0
     val_loss_accum = 0.0
     for inputs, labels, norm_inputs in data_loader:
-        val_h = model.init_hidden(inputs.shape[0])
+        # val_h = model.init_hidden(inputs.shape[0])
         inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
-        val_h = val_h.data
+        # val_h = val_h.data
         output, val_h, _ = model(inputs, norm_inputs, val_h)
         val_loss = model.weighted_mse_loss(output, labels, weights).mean()
         val_loss_accum += val_loss.item()
@@ -276,8 +296,8 @@ def test_epoch(model, data_loader):
     model.to(device)
     sys_params = []
     for inputs, labels, norm_inputs in data_loader:
-        h = model.init_hidden(inputs.shape[0])
-        h = h.data
+        # h = model.init_hidden(inputs.shape[0])
+        # h = h.data
         inputs, labels, norm_inputs = inputs.to(device), labels.to(device), norm_inputs.to(device)
         start= time.time()
         output, h, sysid = model(inputs, norm_inputs, h)
@@ -398,7 +418,7 @@ def train(model, train_data_loader, val_data_loader, test_data_loader):
 if __name__ == "__main__":
     # Load dataset and configuration
     data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_5.npz')
-    param_dict = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics.yaml'), Loader=yaml.SafeLoader)
+    param_dict = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_tcn.yaml'), Loader=yaml.SafeLoader)
     # data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/LVMS_23_01_04_A_15.npz')
     # param_dict = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_iac.yaml'), Loader=yaml.SafeLoader)
     
