@@ -67,57 +67,57 @@ MODEL:
   NAME: DeepDynamics
   HORIZON: 5
   LAYERS:
-    - TCN:
-      OUT_FEATURES: 25
-      LAYERS: 6
+    - GRU:
+        OUT_FEATURES: 25
+        LAYERS: 6
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
     - DENSE:
-      OUT_FEATURES: 436
-      ACTIVATION: Mish
+        OUT_FEATURES: 436
+        ACTIVATION: Mish
   OPTIMIZATION:
     LOSS: MSE
     BATCH_SIZE: 32

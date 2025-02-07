@@ -9,7 +9,7 @@ from tabulate import tabulate
 # Determine device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# 문자열을 실제 torch 모듈로 연결하는 사전 (TCN은 별도 구현)
+
 string_to_torch = {
     # Layers
     "DENSE": torch.nn.Linear,
@@ -30,20 +30,15 @@ string_to_torch = {
     "AdamW": torch.optim.AdamW
 }
 
-##########################################
-# Chomp1d 모듈: 컨볼루션 후 늘어난 시퀀스 길이에서 trailing 부분을 제거
-##########################################
+
 class Chomp1d(nn.Module):
     def __init__(self, chomp_size):
          super(Chomp1d, self).__init__()
          self.chomp_size = chomp_size
     def forward(self, x):
-         # chomp_size 만큼의 마지막 시간축 요소를 잘라냄
+         
          return x[:, :, :-self.chomp_size] if self.chomp_size > 0 else x
 
-##########################################
-# TemporalBlock 모듈 수정 (Chomp1d 적용)
-##########################################
 class TemporalBlock(nn.Module):
     def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2):
         super(TemporalBlock, self).__init__()
@@ -63,31 +58,23 @@ class TemporalBlock(nn.Module):
         
 
     def forward(self, x):
-        # 첫 번째 합성곱 + chomp → ReLU → Dropout
+        
         out = self.conv1(x)
         out = self.chomp1(out)
         out = self.relu1(out)
         out = self.dropout1(out)
-        # 두 번째 합성곱 + chomp → ReLU → Dropout
+        
         out = self.conv2(out)
         out = self.chomp2(out)
         out = self.relu2(out)
         out = self.dropout2(out)
-        # 잔차 연결: 다운샘플링이 필요한 경우 1x1 conv 적용
+    
         res = x if self.downsample is None else self.downsample(x)
         return self.relu(out + res)
 
-##########################################
-# TCN 모듈 구현
-##########################################
 class TCN(nn.Module):
     def __init__(self, num_inputs, num_channels, kernel_size=2, dropout=0.2):
-        """
-        num_inputs: 입력 채널 수  
-        num_channels: 각 층의 출력 채널 리스트 (예, [5, 5, 5, ...])  
-        kernel_size: 합성곱 커널 크기  
-        dropout: 드롭아웃 확률  
-        """
+ 
         super(TCN, self).__init__()
         layers = []
         num_levels = len(num_channels)
@@ -95,29 +82,18 @@ class TCN(nn.Module):
             dilation_size = 2 ** i
             in_channels = num_inputs if i == 0 else num_channels[i - 1]
             out_channels = num_channels[i]
-            # padding = (kernel_size - 1) * dilation_size
             padding = (kernel_size - 1) * dilation_size
             layers += [TemporalBlock(in_channels, out_channels, kernel_size, stride=1,
                                        dilation=dilation_size, padding=padding, dropout=dropout)]
         self.network = nn.Sequential(*layers)
 
     def forward(self, x):
-        """
-        TCN은 (batch, channels, seq_len)의 입력을 받습니다.
-        """
         return self.network(x)
 
-##########################################
-# create_module 함수 (TCN 처리 추가)
-##########################################
 def create_module(name, input_size, horizon, output_size, layers=None, activation=None, is_tcn=None):
     if name == "TCN":
-        # 입력 텐서의 feature 수 = input_size // horizon
-        num_inputs = input_size // horizon  
-        # flatten 후 최종 차원을 맞추기 위해 각 시퀀스 길이 당 출력 채널은:
-        out_channels = output_size // horizon  
-        num_channels = [out_channels] * layers  
-        module = [TCN(num_inputs, num_channels, kernel_size=2, dropout=0.2)]
+        num_channels = [output_size // horizon] * layers  
+        module = [TCN(input_size // horizon, num_channels, kernel_size=2, dropout=0.2)]
     elif layers:
         module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
     elif activation:
@@ -211,10 +187,8 @@ class DeepDynamicsModel(nn.Module):
         self.param_dict = param_dict
         layers = build_network(self.param_dict)
         self.batch_size = self.param_dict["MODEL"]["OPTIMIZATION"]["BATCH_SIZE"]
-        # RNN 관련 파라미터 (TCN 사용 시 큰 영향 없음)
         self.rnn_n_layers = self.param_dict["MODEL"]["LAYERS"][0][list(self.param_dict["MODEL"]["LAYERS"][0].keys())[0]].get("LAYERS")
         self.rnn_hiden_dim = self.param_dict["MODEL"]["HORIZON"]
-        # 첫 번째 층 다음에 Flatten 층 추가 (출력 shape 조정용)
         layers.insert(1, nn.Flatten())
         self.horizon = self.param_dict["MODEL"]["HORIZON"]
         layers.extend([GuardLayer(param_dict)])
@@ -257,7 +231,6 @@ class DeepDynamicsModel(nn.Module):
     def forward(self, x, x_norm, h0=None):
         for i in range(len(self.feed_forward)):
             if i == 0:
-                # 첫 번째 층이 TCN인 경우, 입력 텐서 x_norm의 shape를 (batch, channels, seq_len)으로 맞춤
                 if isinstance(self.feed_forward[i], TCN):
                     ff = self.feed_forward[i](x_norm.permute(0, 2, 1))
                 elif isinstance(self.feed_forward[i], torch.nn.RNNBase):
@@ -292,7 +265,6 @@ class DeepDynamicsModel(nn.Module):
             global_index += 1
         return state_action_dict
     
-    # for RNN (TCN 사용 시 init_hidden는 사용되지 않을 수 있음)
     def init_hidden(self, batch_size):
         weight = next(self.parameters()).data
         hidden = weight.new(self.rnn_n_layers, batch_size, self.rnn_hiden_dim).zero_().to(device)
@@ -301,16 +273,6 @@ class DeepDynamicsModel(nn.Module):
     def weighted_mse_loss(self, input, target, weight):
         return (weight * (input - target) ** 2)
 
-##########################################
-# 기타 유틸리티 및 학습 관련 함수들 (변경 없음)
-##########################################
-def pretty(d, indent=0):
-    for key, value in d.items():
-        print('\t' * indent + str(key))
-        if isinstance(value, dict):
-            pretty(value, indent+1)
-        else:
-            print('\t' * (indent+1) + str(value))
 
 def train_epoch(model, data_loader, weights):
     train_steps = 0
@@ -371,13 +333,10 @@ def test_epoch(model, data_loader):
         sys_params.append(sysid.cpu().detach().numpy())
     
     means, _ = model.unpack_sys_params(np.mean(sys_params, axis=0))
-    std_dev, _ = model.unpack_sys_params(np.std(sys_params, axis=0))
-    min_val, _ = model.unpack_sys_params(np.min(sys_params, axis=0))
-    max_val, _ = model.unpack_sys_params(np.max(sys_params, axis=0))
     
     coeff_names = list(means.keys())
     coeff_means = np.array(list(means.values())).flatten()  
-    coeff_std = np.array(list(std_dev.values())).flatten() 
+
     
     coeff_dict = dict(zip(coeff_names, coeff_means))
     _, ground_truth_dict = model.unpack_sys_params(np.std(sys_params, axis=0))
@@ -436,82 +395,21 @@ def train(model, train_data_loader, val_data_loader, test_data_loader):
 
 
 if __name__ == "__main__":
-    # 데이터 파일 로드 (파일 경로는 실제 환경에 맞게 수정)
     data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_5.npz')
     features = data_npz['features'][:, :, :7]
     labels = data_npz['labels']
     
-    # param_dict = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_tcn.yaml'), Loader=yaml.SafeLoader)
-   
-    param_dict = {
-        "STATE": ["VX", "VY", "YAW_RATE", "THROTTLE_FB", "STEERING_FB"],
-        "ACTIONS": ["THROTTLE_CMD", "STEERING_CMD"],
-        "PARAMETERS": [
-            {"Bf": 5.579, "Min": 5.0, "Max": 30.0},
-            {"Cf": 1.2, "Min": 0.5, "Max": 2.0},
-            {"Df": 0.192, "Min": 0.1, "Max": 0.9},
-            {"Ef": -0.083, "Min": -2.0, "Max": 0.0},
-            {"Br": 5.3852, "Min": 5.0, "Max": 30.0},
-            {"Cr": 1.2691, "Min": 0.5, "Max": 2.0},
-            {"Dr": 0.1737, "Min": 0.1, "Max": 0.9},
-            {"Er": -0.019, "Min": -2.0, "Max": 0.0},
-            {"Cm1": 0.287, "Min": 0.1435, "Max": 0.574},
-            {"Cm2": 0.0545, "Min": 0.02725, "Max": 0.109},
-            {"Cr0": 0.0518, "Min": 0.0259, "Max": 0.1036},
-            {"Cr2": 0.00035, "Min": 1.75e-4, "Max": 7.0e-4},
-            {"Iz": 27.8e-6, "Min": 1.39e-5, "Max": 5.56e-5},
-            {"Shf": -0.0013, "Min": -0.02, "Max": 0.02},
-            {"Svf": 0.00043, "Min": -0.003, "Max": 0.003},
-            {"Shr": -0.00376, "Min": -0.02, "Max": 0.02},
-            {"Svr": 0.00091, "Min": -0.003, "Max": 0.003}
-        ],
-        "VEHICLE_SPECS": {
-            "lf": 0.029,
-            "lr": 0.033,
-            "mass": 0.041
-        },
-        "MODEL": {
-            "NAME": "DeepDynamics",
-            "HORIZON": 5,
-            "LAYERS": [
-                {"TCN": {"OUT_FEATURES": 25, "LAYERS": 6}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}},
-                {"DENSE": {"OUT_FEATURES": 436, "ACTIVATION": "Mish"}}
-            ],
-            "OPTIMIZATION": {
-                "LOSS": "MSE",
-                "BATCH_SIZE": 32,
-                "NUM_EPOCHS": 400,
-                "OPTIMIZER": "Adam",
-                "LR": 0.0006
-            }
-        }
-    }
-    
-    # 모델 초기화
-    model = DeepDynamicsModel(param_dict, eval=False)
+    param_dict1 = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_tcn.yaml'), Loader=yaml.SafeLoader)
+
+    model = DeepDynamicsModel(param_dict1, eval=False)
     print("model:", model)
     
-    # 데이터셋 생성 및 분할
+
     dataset = DeepDynamicsDataset(features, labels)
     train_dataset, val_dataset = dataset.split(0.8)
     train_data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=model.batch_size, shuffle=True, drop_last=True)
     val_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=model.batch_size, shuffle=False)
     test_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False)
     
-    # 모델 학습 시작
+
     train(model, train_data_loader, val_data_loader, test_data_loader)
