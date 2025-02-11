@@ -1,10 +1,13 @@
 import torch
 from torch import nn
+import tcn
+from torchinfo import summary
 import yaml
 import numpy as np
 import time
 from sklearn.preprocessing import StandardScaler
 from tabulate import tabulate
+
 
 # Determine device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -16,6 +19,7 @@ string_to_torch = {
     "LSTM": torch.nn.LSTM,
     "GRU": torch.nn.GRU,
     "RNN": torch.nn.RNN,
+    "TCN": tcn.TCN,
     # Activations
     "ReLU": torch.nn.ReLU,
     "Mish": torch.nn.Mish,
@@ -30,70 +34,10 @@ string_to_torch = {
     "AdamW": torch.optim.AdamW
 }
 
-
-class Chomp1d(nn.Module):
-    def __init__(self, chomp_size):
-         super(Chomp1d, self).__init__()
-         self.chomp_size = chomp_size
-    def forward(self, x):
-         
-         return x[:, :, :-self.chomp_size] if self.chomp_size > 0 else x
-
-class TemporalBlock(nn.Module):
-    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2):
-        super(TemporalBlock, self).__init__()
-        self.conv1 = nn.Conv1d(n_inputs, n_outputs, kernel_size,
-                               stride=stride, padding=padding, dilation=dilation)
-        self.chomp1 = Chomp1d(padding)
-        self.relu1 = nn.ReLU()
-        self.dropout1 = nn.Dropout(dropout)
-        self.conv2 = nn.Conv1d(n_outputs, n_outputs, kernel_size,
-                               stride=stride, padding=padding, dilation=dilation)
-        self.chomp2 = Chomp1d(padding)
-        self.relu2 = nn.ReLU()
-       
-        self.dropout2 = nn.Dropout(dropout)
-        self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
-        self.relu = nn.ReLU()
-        
-
-    def forward(self, x):
-        
-        out = self.conv1(x)
-        out = self.chomp1(out)
-        out = self.relu1(out)
-        out = self.dropout1(out)
-        
-        out = self.conv2(out)
-        out = self.chomp2(out)
-        out = self.relu2(out)
-        out = self.dropout2(out)
-    
-        res = x if self.downsample is None else self.downsample(x)
-        return self.relu(out + res)
-
-class TCN(nn.Module):
-    def __init__(self, num_inputs, num_channels, kernel_size=2, dropout=0.2):
- 
-        super(TCN, self).__init__()
-        layers = []
-        num_levels = len(num_channels)
-        for i in range(num_levels):
-            dilation_size = 2 ** i
-            in_channels = num_inputs if i == 0 else num_channels[i - 1]
-            out_channels = num_channels[i]
-            padding = (kernel_size - 1) * dilation_size
-            layers += [TemporalBlock(in_channels, out_channels, kernel_size, stride=1,
-                                       dilation=dilation_size, padding=padding, dropout=dropout)]
-        self.network = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.network(x)
-
 def create_module(name, input_size, horizon, output_size, layers=None, activation=None, is_tcn=None):
     if name == "TCN":
         num_channels = [output_size // horizon] * layers  
-        module = [TCN(input_size // horizon, num_channels, kernel_size=2, dropout=0.2)]
+        module = [string_to_torch[name](input_size // horizon, num_channels, kernel_size=2, dropout=0.2)]
     elif layers:
         module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
     elif activation:
@@ -162,7 +106,10 @@ class GuardLayer(nn.Module):
         super().__init__()
         guard_output = create_module(
             "DENSE", 
-            param_dict["MODEL"]["LAYERS"][-1][list(param_dict["MODEL"]["LAYERS"][-1].keys())[0]]["OUT_FEATURES"],
+            param_dict["MODEL"]["LAYERS"][-1][
+                list(
+                    param_dict["MODEL"]["LAYERS"][-1].keys()
+                    )[0]]["OUT_FEATURES"],
             param_dict["MODEL"]["HORIZON"],
             len(param_dict["PARAMETERS"]),
             activation="Sigmoid"
@@ -228,10 +175,12 @@ class DeepDynamicsModel(nn.Module):
         dxdt *= Ts
         return x[:, -1, :3] + dxdt
 
-    def forward(self, x, x_norm, h0=None):
+    def forward(self, x, x_norm=None, h0=None):
+        if x_norm is None:
+            x_norm = x
         for i in range(len(self.feed_forward)):
             if i == 0:
-                if isinstance(self.feed_forward[i], TCN):
+                if isinstance(self.feed_forward[i], tcn.TCN):
                     ff = self.feed_forward[i](x_norm.permute(0, 2, 1))
                 elif isinstance(self.feed_forward[i], torch.nn.RNNBase):
                     ff, h0 = self.feed_forward[i](x_norm, h0)
@@ -381,6 +330,8 @@ def train(model, train_data_loader, val_data_loader, test_data_loader):
         if val_loss < valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}).'.format(valid_loss_min, val_loss))
             valid_loss_min = val_loss
+            model.eval()
+            test_epoch(model, test_data_loader)
         
         print("Epoch: {}/{}...".format(i+1, model.epochs),
               "Train Loss: {:.6f}...".format(train_loss),
@@ -389,21 +340,22 @@ def train(model, train_data_loader, val_data_loader, test_data_loader):
         if np.isnan(val_loss):
             break
         
-        if (i+1) % 10 == 0:
-            model.eval()
-            test_epoch(model, test_data_loader)
+        # if (i+1) % 10 == 0:
+        #     model.eval()
+        #     test_epoch(model, test_data_loader)
 
 
 if __name__ == "__main__":
-    data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_5.npz')
+    data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_100.npz')
     features = data_npz['features'][:, :, :7]
     labels = data_npz['labels']
     
     param_dict1 = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_tcn.yaml'), Loader=yaml.SafeLoader)
 
     model = DeepDynamicsModel(param_dict1, eval=False)
-    print("model:", model)
+    # print("model:", model)
     
+     
 
     dataset = DeepDynamicsDataset(features, labels)
     train_dataset, val_dataset = dataset.split(0.8)
@@ -411,5 +363,6 @@ if __name__ == "__main__":
     val_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=model.batch_size, shuffle=False)
     test_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False)
     
-
+    summary(model, input_size=(model.batch_size, model.horizon, 7))
+    
     train(model, train_data_loader, val_data_loader, test_data_loader)
