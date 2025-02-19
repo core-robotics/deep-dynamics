@@ -7,6 +7,7 @@ import numpy as np
 import time
 from sklearn.preprocessing import StandardScaler
 from tabulate import tabulate
+import os
 
 
 # Determine device
@@ -38,8 +39,10 @@ def create_module(name, input_size, horizon, output_size, layers=None, activatio
     if name == "TCN":
         num_channels = [output_size // horizon] * layers  
         module = [string_to_torch[name](input_size // horizon, num_channels, kernel_size=2, dropout=0.2)]
-    elif layers:
-        module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
+    elif name == "GRU":
+        module = [string_to_torch[name](input_size // horizon, output_size//horizon, layers, batch_first=True)]
+    # elif layers:
+    #     module = [string_to_torch[name](input_size // horizon, horizon, layers, batch_first=True)]
     elif activation:
         module = [string_to_torch[name](input_size, output_size), string_to_torch[activation]()] 
     else:
@@ -135,7 +138,8 @@ class DeepDynamicsModel(nn.Module):
         layers = build_network(self.param_dict)
         self.batch_size = self.param_dict["MODEL"]["OPTIMIZATION"]["BATCH_SIZE"]
         self.rnn_n_layers = self.param_dict["MODEL"]["LAYERS"][0][list(self.param_dict["MODEL"]["LAYERS"][0].keys())[0]].get("LAYERS")
-        self.rnn_hiden_dim = self.param_dict["MODEL"]["HORIZON"]
+        # self.rnn_hiden_dim = self.param_dict["MODEL"]["HORIZON"]
+        self.rnn_hiden_dim = (self.param_dict["MODEL"]["LAYERS"][0][list(self.param_dict["MODEL"]["LAYERS"][0].keys())[0]]["OUT_FEATURES"]) // self.param_dict["MODEL"]["HORIZON"]
         layers.insert(1, nn.Flatten())
         self.horizon = self.param_dict["MODEL"]["HORIZON"]
         layers.extend([GuardLayer(param_dict)])
@@ -303,6 +307,8 @@ def test_epoch(model, data_loader):
         percent_error = abs((coeff_value - gt_value) / gt_value) * 100
         param_table_data.append([key, gt_value, coeff_value, f"{percent_error:.2f}%"])
     print(tabulate(param_table_data, headers=param_table_headers, tablefmt="grid"))
+    print("Mean Percent Error: ", np.mean([float(x[-1][:-1]) for x in param_table_data]))
+    print("\n")
     
     state_table_data = []
     state_table_headers = ["State", "Mean Error", "Max Error"]
@@ -314,11 +320,13 @@ def test_epoch(model, data_loader):
     print("\nMean Inference Time: ", np.mean(inference_times))
     print("\n")
     
-def train(model, train_data_loader, val_data_loader, test_data_loader):
+def train(model, train_data_loader, val_data_loader, test_data_loader, model_name, horizon,output_dir):
     valid_loss_min = torch.inf
     model.train()
     model.to(device)
     weights = torch.tensor([1.0, 1.0, 1.0]).to(device)
+    train_loss_list = []
+    val_loss_list = []
     
     for i in range(model.epochs):
         model.train()
@@ -330,39 +338,59 @@ def train(model, train_data_loader, val_data_loader, test_data_loader):
         if val_loss < valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}).'.format(valid_loss_min, val_loss))
             valid_loss_min = val_loss
+            file_name=f"{i}_epoch.pth"
+            torch.save(model.state_dict(), os.path.join(output_dir, file_name))
+            print(f"Model saved as {file_name}")
             model.eval()
             test_epoch(model, test_data_loader)
         
         print("Epoch: {}/{}...".format(i+1, model.epochs),
-              "Train Loss: {:.6f}...".format(train_loss),
-              "Val Loss: {:.6f}".format(val_loss))
+              "Train Loss: {:.7f}...".format(train_loss),
+              "Val Loss: {:.7f}".format(val_loss))
         
         if np.isnan(val_loss):
             break
         
-        # if (i+1) % 10 == 0:
-        #     model.eval()
-        #     test_epoch(model, test_data_loader)
+        train_loss_list.append(train_loss)
+        val_loss_list.append(val_loss)
+        
+    return train_loss_list, val_loss_list
+        
+        
 
 
 if __name__ == "__main__":
-    data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_100.npz')
+    
+    horizon="50"
+    model_name="TCN"
+    # data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_5.npz')
+    data_npz = np.load('/home/a/deep-dynamics/deep_dynamics/data/DYN-PP-ETHZMobil_' + horizon + '.npz')
+    
+    output_dir = f"/home/a/deep-dynamics/deep_dynamics/output/{model_name}_{horizon}h/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
     features = data_npz['features'][:, :, :7]
     labels = data_npz['labels']
     
     param_dict1 = yaml.load(open('/home/a/deep-dynamics/deep_dynamics/cfgs/model/deep_dynamics_tcn.yaml'), Loader=yaml.SafeLoader)
-
-    model = DeepDynamicsModel(param_dict1, eval=False)
-    # print("model:", model)
     
-     
-
+    model = DeepDynamicsModel(param_dict1, eval=False)
+    
     dataset = DeepDynamicsDataset(features, labels)
     train_dataset, val_dataset = dataset.split(0.8)
     train_data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=model.batch_size, shuffle=True, drop_last=True)
     val_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=model.batch_size, shuffle=False)
     test_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False)
-    
+  
+    summary(model, input_size=(model.batch_size, model.horizon, 7))
+    train_loss, val_loss=train(model, train_data_loader, val_data_loader, test_data_loader, model_name, horizon,output_dir=output_dir)
     summary(model, input_size=(model.batch_size, model.horizon, 7))
     
-    train(model, train_data_loader, val_data_loader, test_data_loader)
+    
+    np.savez(output_dir + model_name + "_" + horizon + "_losses.npz", train_loss=train_loss, val_loss=val_loss)
+    
+    
+    
+    
+    
